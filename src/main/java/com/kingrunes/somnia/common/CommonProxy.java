@@ -1,39 +1,23 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.Somnia;
-import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
-import com.kingrunes.somnia.common.capability.IFatigue;
-import com.kingrunes.somnia.common.util.ClassUtils;
 import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 public class CommonProxy
 {
@@ -144,42 +128,6 @@ public class CommonProxy
 		CapabilityFatigue.register();
 	}
 
-	@SubscribeEvent
-	public void interactHook(PlayerInteractEvent event)
-	{
-		/*World world = event.getWorld();
-
-		BlockPos pos = event.getPos();
-
-		EntityPlayer player = event.getEntityPlayer();
-		IBlockState state = world.getBlockState(pos);
-
-		if (event instanceof PlayerInteractEvent.RightClickBlock && state.getBlock() == Blocks.BED)
-		{
-
-			if (state.getValue(BlockBed.PART) != BlockBed.EnumPartType.HEAD)
-			{
-				pos = pos.offset(state.getValue(BlockBed.FACING));
-				state = world.getBlockState(pos);
-
-				if (state.getBlock() != Blocks.BED)
-				{
-					event.setCanceled(true);
-					return;
-				}
-			}
-
-			if (world.isRemote && Math.abs(player.posX - (double) pos.getX()) < 3.0D && Math.abs(player.posY - (double) pos.getY()) < 2.0D && Math.abs(player.posZ - (double) pos.getZ()) < 3.0)
-			{
-				ItemStack currentItem = player.inventory.getCurrentItem();
-				GuiScreen guiScreen = Minecraft.getMinecraft().currentScreen;
-
-				// Wake at next sunrise/sunset (whichever comes first)
-				long totalWorldTime = world.getTotalWorldTime();
-				Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
-			}
-		}*/
-	}
 
 	@SubscribeEvent
 	public void worldLoadHook(WorldEvent.Load event)
@@ -223,129 +171,6 @@ public class CommonProxy
 			
 	        Somnia.eventChannel.sendTo(PacketHandler.buildGUIClosePacket(), (EntityPlayerMP) event.getEntityLiving());
 		}
-	}
-	
-	@SubscribeEvent
-	public void sleepHook(PlayerSleepInBedEvent event)
-	{
-		//onSleep(event);
-		/*if(event.getResultStatus() == EntityPlayer.SleepResult.OTHER_PROBLEM && event.getEntityPlayer().world.isRemote)
-		{
-			event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
-		}*/
-	}
-	
-	/*
-	 * This method re-implements the entire sleep checking logic, look away
-	 */
-	public void onSleep(PlayerSleepInBedEvent event)
-	{
-		if (event.getResultStatus() != null && event.getResultStatus() != EntityPlayer.SleepResult.OK)
-			return;
-
-		BlockPos pos = event.getPos();
-		EntityPlayer player = event.getEntityPlayer();
-
-
-		GuiScreen guiScreen = Minecraft.getMinecraft().currentScreen;
-		if (guiScreen instanceof GuiSelectWakeTime) {
-			event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-			return;
-		}
-
-		if (!player.world.isRemote)
-        {
-			IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-			if (props != null && props.getFatigue() < minimumFatigueToSleep)
-			{
-				System.out.println(props.getFatigue());
-				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-				player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
-				return;
-			}
-			
-			if (!enterSleepPeriod.isTimeWithin(player.world.getWorldTime() % 24000))
-			{
-				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
-				return;
-			}
-			
-			if (!sleepWithArmor && Somnia.doesPlayHaveAnyArmor(player))
-			{
-				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-				player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
-				return;
-			}
-			
-            if (player.isPlayerSleeping() || !player.isEntityAlive())
-            {
-            	event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-            	return;
-            }
-
-            if (!player.world.provider.isSurfaceWorld())
-            {
-            	event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_HERE);
-                return;
-            }
-
-            if (Math.abs(player.posX - (double)pos.getX()) > 3.0d || Math.abs(player.posY - (double)pos.getY()) > 2.0d || Math.abs(player.posZ - (double)pos.getZ()) > 3.0d)
-            {
-                event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
-                return;
-            }
-
-            if (!ignoreMonsters)
-            {
-	            double d0 = 8.0D;
-	            double d1 = 5.0D;
-	            
-				List<?> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - d0, (double)pos.getY() - d1, (double)pos.getZ() - d0, (double)pos.getX() + d0, (double)pos.getY() + d1, (double)pos.getZ() + d0));
-	
-	            if (!list.isEmpty())
-	            {
-	                event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
-	                return;
-	            }
-            }
-        }
-
-        if (player.isRiding())
-        {
-        	player.dismountRidingEntity();
-        }
-
-        ClassUtils.setSize(player, 0.2F, 0.2F);
-
-		IBlockState state = player.world.getBlockState(pos);
-
-        if (player.world.isBlockLoaded(pos))
-        {
-        	EnumFacing enumfacing = state.getBlock().getBedDirection(state, player.world, pos);
-			float f1 = 0.5F + (float)enumfacing.getFrontOffsetX() * 0.5F;
-			float f = 0.5F + (float)enumfacing.getFrontOffsetZ() * 0.5F;
-			player.renderOffsetX = -1.8F * (float)enumfacing.getFrontOffsetX();
-			player.renderOffsetZ = -1.8F * (float)enumfacing.getFrontOffsetZ();
-
-			player.setPosition(((float)pos.getX() + f1), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + f));
-        }
-		else player.setPosition(((float)pos.getX() + 0.5F), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + 0.5F));
-
-        ClassUtils.setSleeping(player, true);
-        ClassUtils.setSleepTimer(player, 0);
-        player.setPosition(pos.getX(), pos.getY(), pos.getZ());
-        player.motionX = player.motionZ = player.motionY = 0.0D;
-        player.bedLocation = pos;
-        state.getBlock().setBedOccupied(player.world, pos, player, true);
-
-        if (!player.world.isRemote)
-        {
-            player.world.updateAllPlayersSleepingFlag();
-        }
-		
-        event.setResult(EntityPlayer.SleepResult.OK);
-        
-        if (!player.world.isRemote) Somnia.eventChannel.sendToServer(PacketHandler.buildGUIOpenPacket());
 	}
 	
 	/*
