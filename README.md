@@ -5,6 +5,8 @@ Insead of skipping the night, the world is sped up until you sleep.
 You can now sleep at any time, as long as you have enough fatigue, which you gain passively over time. 
 Be careful - getting too tired gives you negative effects.
 
+![Simulation](src/main/resources/assets/somnia/wiki/simulation.gif)
+
 ## Getting started
 All information is available on Somnia's ![wiki](https://github.com/Su5eD/Somnia/wiki)
 
