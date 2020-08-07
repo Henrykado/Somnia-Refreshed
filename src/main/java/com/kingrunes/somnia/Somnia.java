@@ -3,6 +3,8 @@ package com.kingrunes.somnia;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.capability.CapabilityFatigue;
+import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.SomniaState;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;
@@ -207,5 +209,15 @@ public class Somnia
 		}
 
 		return EnumActionResult.PASS;
+	}
+
+	public static void updateWakeTime(World world) {
+		long totalWorldTime = world.getTotalWorldTime();
+		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+	}
+
+	public static boolean checkFatigue(EntityPlayer player) {
+		IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		return fatigue == null || fatigue.getFatigue() >= CommonProxy.minimumFatigueToSleep;
 	}
 }

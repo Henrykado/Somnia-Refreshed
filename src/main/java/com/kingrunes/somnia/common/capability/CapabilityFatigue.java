@@ -11,6 +11,6 @@ public class CapabilityFatigue
 
     public static void register()
     {
-        CapabilityManager.INSTANCE.register(IFatigue.class, new FatigueCapabilityStorage(), Fatigue.class);
+        CapabilityManager.INSTANCE.register(IFatigue.class, new FatigueCapabilityStorage(), Fatigue::new);
     }
 }
