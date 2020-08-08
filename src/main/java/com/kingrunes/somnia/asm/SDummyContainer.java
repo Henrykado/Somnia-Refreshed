@@ -6,9 +6,6 @@ import com.kingrunes.somnia.SomniaVersion;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
-import scala.actors.threadpool.Arrays;
-
-import java.util.Collections;
 
 public class SDummyContainer extends DummyModContainer
 {

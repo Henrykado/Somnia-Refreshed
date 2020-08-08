@@ -1,12 +1,12 @@
 package com.kingrunes.somnia.client;
 
+import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.client.gui.GuiSomnia;
 import com.kingrunes.somnia.common.CommonProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -27,13 +27,11 @@ public class ClientProxy extends CommonProxy
 	}
 	
 	@Override
-	public void handleGUIOpenPacket()
-	{
-		if (somniaGui)
-		{
-			final Minecraft mc = Minecraft.getMinecraft();
-			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSomnia()));
-		}
+	public void handleGUIOpenPacket(DataInputStream in) throws IOException {
+		byte data = in.readByte();
+		final Minecraft mc = Minecraft.getMinecraft();
+		GuiScreen gui = data == 0x00 && somniaGui ? new GuiSomnia() : data == 0x01 ? new GuiSelectWakeTime() : null;
+		if (gui != null) mc.addScheduledTask(() -> mc.displayGuiScreen(gui));
 	}
 
 	@Override

@@ -33,7 +33,6 @@ import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
@@ -196,14 +195,14 @@ public class Somnia
 
 		if (state.getBlock() == Blocks.BED)
 		{
-			Minecraft minecraft = Minecraft.getMinecraft();
 			ItemStack currentItem = player.inventory.getCurrentItem();
 			if (currentItem != ItemStack.EMPTY && currentItem.getItem() == Items.CLOCK) {
 				if (world.isRemote) {
+					Minecraft minecraft = Minecraft.getMinecraft();
 					if (minecraft.currentScreen instanceof GuiSelectWakeTime) return EnumActionResult.FAIL;
-					System.out.println(minecraft.player.getDisplayName());
-					minecraft.addScheduledTask(() -> minecraft.displayGuiScreen(new GuiSelectWakeTime()));
 				}
+				else Somnia.eventChannel.sendTo(PacketHandler.buildGuiSelectWakeTimePacket(), (EntityPlayerMP) player);
+
 				return EnumActionResult.SUCCESS;
 			}
 		}

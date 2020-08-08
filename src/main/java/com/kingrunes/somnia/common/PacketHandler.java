@@ -47,7 +47,7 @@ public class PacketHandler
 			switch (id)
 			{
 			case 0x00:
-				handleGUIOpenPacket();
+				handleGUIOpenPacket(in);
 				break;
 			case 0x01:
 				handleGUIClosePacket(player, in);
@@ -67,9 +67,8 @@ public class PacketHandler
 	}
 
 	// CLIENT
-	private void handleGUIOpenPacket() throws IOException
-	{
-		Somnia.proxy.handleGUIOpenPacket();
+	private void handleGUIOpenPacket(DataInputStream in) throws IOException {
+		Somnia.proxy.handleGUIOpenPacket(in);
 	}
 	
 	private void handlePropUpdatePacket(DataInputStream in) throws IOException 
@@ -93,14 +92,22 @@ public class PacketHandler
 	
 	public static FMLProxyPacket buildGUIOpenPacket()
 	{
-		return doBuildGUIOpenPacket();
+		return doBuildGUIOpenPacket((byte) 0x00);
 	}
-	
-	private static FMLProxyPacket doBuildGUIOpenPacket()
+
+	public static FMLProxyPacket buildGuiSelectWakeTimePacket() {
+		return doBuildGUIOpenPacket((byte) 0x01);
+	}
+
+	/**
+	 * @param data 0 for GuiSomnia, 1 for GuiSelectWakeTime
+	 */
+	private static FMLProxyPacket doBuildGUIOpenPacket(byte data)
 	{
 		PacketBuffer buffer = unpooled();
 		
     	buffer.writeByte(0x00);
+    	buffer.writeByte(data);
     	return new FMLProxyPacket(buffer, Somnia.MOD_ID);
 	}
 	
