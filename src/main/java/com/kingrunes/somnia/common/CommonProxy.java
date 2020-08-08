@@ -44,7 +44,23 @@ public class CommonProxy
 							disableCreatureSpawning,
 							disableRendering,
 							disableMoodSoundAndLightCheck;
-	
+
+	public static int 	sideEffectStage1,
+						sideEffectStage1Potion,
+						sideEffectStage1Amplifier,
+						sideEffectStage1Duration,
+						sideEffectStage2,
+						sideEffectStage2Potion,
+						sideEffectStage2Amplifier,
+						sideEffectStage2Duration,
+						sideEffectStage3,
+						sideEffectStage3Potion,
+						sideEffectStage3Amplifier,
+						sideEffectStage3Duration,
+						sideEffectStage4,
+						sideEffectStage4Potion,
+						sideEffectStage4Amplifier;
+
 	public String		displayFatigue;
 	
 	public static ForgeEventHandler forgeEventHandler;
@@ -83,6 +99,29 @@ public class CommonProxy
 		fatigueRate = config.get("fatigue", "fatigueRate", 0.00208d).getDouble(0.00208d);
 		fatigueReplenishRate = config.get("fatigue", "fatigueReplenishRate", 0.00833d).getDouble(0.00833d);
 		minimumFatigueToSleep = config.get("fatigue", "minimumFatigueToSleep", 20.0d).getDouble(20.0d);
+
+		/*
+		 * fatigue side effects
+		 */
+		config.setCategoryComment("fatigue side effects", "Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)");
+		sideEffectStage1 = config.get("fatigue side effects", "sideEffectStage1", 70).getInt();
+		sideEffectStage1Potion = config.get("fatigue side effects", "sideEffectStage1Potion", 9).getInt();
+		sideEffectStage1Amplifier = config.get("fatigue side effects", "sideEffectStage1Amplifier", 0).getInt();
+		sideEffectStage1Duration = config.get("fatigue side effects", "sideEffectStage1Duration", 150).getInt();
+
+		sideEffectStage2 = config.get("fatigue side effects", "sideEffectStage2", 80).getInt();
+		sideEffectStage2Potion = config.get("fatigue side effects", "sideEffectStage2Potion", 2).getInt();
+		sideEffectStage2Amplifier = config.get("fatigue side effects", "sideEffectStage2Amplifier", 2).getInt();
+		sideEffectStage2Duration = config.get("fatigue side effects", "sideEffectStage2Duration", 300).getInt();
+
+		sideEffectStage3 = config.get("fatigue side effects", "sideEffectStage3", 90).getInt();
+		sideEffectStage3Potion = config.get("fatigue side effects", "sideEffectStage3Potion", 19).getInt();
+		sideEffectStage3Amplifier = config.get("fatigue side effects", "sideEffectStage3Amplifier", 1).getInt();
+		sideEffectStage3Duration = config.get("fatigue side effects", "sideEffectStage3Duration", 200).getInt();
+
+		sideEffectStage4 = config.get("fatigue side effects", "sideEffectStage4", 95).getInt();
+		sideEffectStage4Potion = config.get("fatigue side effects", "sideEffectStage4Potion", 2).getInt();
+		sideEffectStage4Amplifier = config.get("fatigue side effects", "sideEffectStage4Amplifier", 3).getInt();
 
 		/*
 		 * Logic

@@ -61,24 +61,24 @@ public class ForgeEventHandler
 			if (CommonProxy.fatigueSideEffects)
 			{
 				int lastSideEffectStage = props.getSideEffectStage();
-				if (fatigue > 70.0d && lastSideEffectStage < 70)
+				if (fatigue > CommonProxy.sideEffectStage1 && lastSideEffectStage < CommonProxy.sideEffectStage1)
 				{
-					props.setSideEffectStage(70);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(9), 150, 0));
+					props.setSideEffectStage(CommonProxy.sideEffectStage1);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage1Potion), CommonProxy.sideEffectStage1Duration, CommonProxy.sideEffectStage1Amplifier));
 				}
-				else if (fatigue > 80.0d && lastSideEffectStage < 80)
+				else if (fatigue > CommonProxy.sideEffectStage2 && lastSideEffectStage < CommonProxy.sideEffectStage2)
 				{
-					props.setSideEffectStage(80);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(2), 300, 2));
+					props.setSideEffectStage(CommonProxy.sideEffectStage2);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage2Potion), CommonProxy.sideEffectStage2Duration, CommonProxy.sideEffectStage2Amplifier));
 				}
-				else if (fatigue > 90.0d && lastSideEffectStage < 90)
+				else if (fatigue > CommonProxy.sideEffectStage3 && lastSideEffectStage < CommonProxy.sideEffectStage3)
 				{
-					props.setSideEffectStage(90);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(19), 200, 1));
+					props.setSideEffectStage(CommonProxy.sideEffectStage3);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage3Potion), CommonProxy.sideEffectStage3Duration, CommonProxy.sideEffectStage3Amplifier));
 				}
-				else if (fatigue > 95.0d)
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(2), 150, 3));
-				else if (fatigue < 70.0d)
+				else if (fatigue > CommonProxy.sideEffectStage4)
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage4Potion), 150, CommonProxy.sideEffectStage4Amplifier));
+				else if (fatigue < CommonProxy.sideEffectStage1)
 					props.setSideEffectStage(-1);
 			}
 		}
