@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "1.9"
+version = VERSION_MAJOR+"."+VERSION_MINOR+(VERSION_REVISION > 0 ? "."+VERSION_REVISION : "")
 group = "com.kingrunes.somnia" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "somnia"
 
