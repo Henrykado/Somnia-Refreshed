@@ -117,13 +117,21 @@ public class ClientTickHandler
 		int x, y, stringWidth = fontRenderer.getStringWidth(str);
 		String param = Somnia.proxy.displayFatigue.toLowerCase();
 		switch (param) {
+			case "tc":
+				x = (scaledResolution.getScaledWidth() / 2 ) - (stringWidth / 2);
+				y = fontRenderer.FONT_HEIGHT;
+				break;
 			case "tl":
 				x = 10;
-				y = 10;
+				y = fontRenderer.FONT_HEIGHT;
 				break;
 			case "tr":
 				x = scaledResolution.getScaledWidth() - stringWidth - 10;
-				y = 10;
+				y = fontRenderer.FONT_HEIGHT;
+				break;
+			case "bc":
+				x = (scaledResolution.getScaledWidth() / 2 ) - (stringWidth / 2);
+				y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 45;
 				break;
 			case "bl":
 				x = 10;
