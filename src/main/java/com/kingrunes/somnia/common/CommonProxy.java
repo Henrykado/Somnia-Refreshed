@@ -9,6 +9,7 @@ import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -82,15 +83,16 @@ public class CommonProxy
 		}
 	}
 
-	@SubscribeEvent
-	public void onGuiOpen(GuiScreenEvent.DrawScreenEvent.Post event) {
+	/*@SubscribeEvent
+	public void onGuiDraw(GuiScreenEvent event) {
 		Minecraft mc = Minecraft.getMinecraft();
 		if (mc.player == null) return;
 
 		if (mc.player.isPlayerSleeping() && SomniaConfig.OPTIONS.somniaGui && !(event.getGui() instanceof GuiSomnia)) {
 			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSomnia()));
+			event.setCanceled(true);
 		}
-	}
+	}*/
 
 	/*
 	 * The following methods are implemented client-side only
