@@ -24,8 +24,8 @@ import java.util.List;
 public class SomniaCommand extends CommandBase
 {
 	private static final String	COMMAND_NAME 			= "somnia",
-								COMMAND_USAGE			= "[override [add <player>|remove <player>|list]] [fatigue [set <player>]]",
-								COMMAND_USAGE_CONSOLE	= "[override [add [player]|remove [player]|list]] [fatigue [set [player]]]",
+								COMMAND_USAGE			= "[override [add <player> | remove <player> | list]] [fatigue [set <amount> <player>]]",
+								COMMAND_USAGE_CONSOLE	= "[override [add [player]|remove [player]|list]] [fatigue [set [amount] [player]]]",
 								COMMAND_USAGE_FORMAT	= "/%s %s";
 	
 	@Override
@@ -129,7 +129,7 @@ public class SomniaCommand extends CommandBase
 		if ("fatigue".equals(arg))
 			return Collections.singletonList("set");
 		else if ("override".equals(arg)) return getListOfStringsMatchingLastWord(args, "add", "remove", "list");
-		else if (args.length == 3 && !arg.equals("list")) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+		else if (args.length == 4 && !arg.equals("list")) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
 
 		return args.length < 2 ? getListOfStringsMatchingLastWord(args, "fatigue", "override") : Collections.emptyList();
 	}
