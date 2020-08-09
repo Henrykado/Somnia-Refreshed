@@ -3,6 +3,7 @@ package com.kingrunes.somnia;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.SomniaState;
@@ -74,8 +75,7 @@ public class Somnia
 		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
 		event.getModMetadata().version = VERSION;
-        proxy.configure(event.getSuggestedConfigurationFile());
-    }
+	}
 	
 	@EventHandler
 	public void init(FMLInitializationEvent event) 
@@ -92,7 +92,8 @@ public class Somnia
 	{
 		event.registerServerCommand(new SomniaCommand());
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static void tick()
 	{
 		synchronized (Somnia.instance.tickHandlers)
@@ -121,6 +122,7 @@ public class Somnia
 		return lsHours + ":" + lsMinutes;
 	}
 
+	@SuppressWarnings("unused")
 	public static boolean doesPlayHaveAnyArmor(EntityPlayer e)
 	{
 		ItemStack[] armor = e.inventory.armorInventory.toArray(new ItemStack[0]);
@@ -146,21 +148,23 @@ public class Somnia
 	 * 
 	*/
 
+	@SuppressWarnings("unused")
 	@SideOnly(Side.CLIENT)
 	public static void renderWorld(float par1, long par2)
 	{
-		if (Minecraft.getMinecraft().player.isPlayerSleeping() && CommonProxy.disableRendering)
+		if (Minecraft.getMinecraft().player.isPlayerSleeping() && SomniaConfig.PERFORMANCE.disableRendering)
 		{
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			return;
 		}
 		Minecraft.getMinecraft().entityRenderer.renderWorld(par1, par2);
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static boolean doMobSpawning(WorldServer par1WorldServer)
 	{
 		boolean defValue = par1WorldServer.getGameRules().getBoolean("doMobSpawning");
-		if (!CommonProxy.disableCreatureSpawning || !defValue)
+		if (!SomniaConfig.PERFORMANCE.disableCreatureSpawning || !defValue)
 			return defValue;
 		
 		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
@@ -171,10 +175,11 @@ public class Somnia
 		
 		throw new IllegalStateException("tickHandlers doesn't contain match for given world server");
 	}
-	
+
+	@SuppressWarnings("unused")
 	public static void chunkLightCheck(Chunk chunk)
 	{
-		if (!CommonProxy.disableMoodSoundAndLightCheck)
+		if (!SomniaConfig.PERFORMANCE.disableMoodSoundAndLightCheck)
 			chunk.checkLight();
 		
 		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
@@ -190,6 +195,7 @@ public class Somnia
 		chunk.checkLight();
 	}
 
+	@SuppressWarnings("unused")
 	public static EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
 		IBlockState state = world.getBlockState(pos);
 
@@ -206,17 +212,22 @@ public class Somnia
 				return EnumActionResult.SUCCESS;
 			}
 		}
-
+		boolean sleepWithArmor = SomniaConfig.OPTIONS.sleepWithArmor;
 		return EnumActionResult.PASS;
 	}
 
+	@SuppressWarnings("unused")
 	public static void updateWakeTime(World world) {
 		long totalWorldTime = world.getTotalWorldTime();
 		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
 	}
 
+	@SuppressWarnings("unused")
 	public static boolean checkFatigue(EntityPlayer player) {
+		boolean ignmonst = SomniaConfig.OPTIONS.ignoreMonsters;
+		boolean armor = SomniaConfig.OPTIONS.sleepWithArmor;
+
 		IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		return fatigue == null || fatigue.getFatigue() >= CommonProxy.minimumFatigueToSleep;
+		return fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
 	}
 }

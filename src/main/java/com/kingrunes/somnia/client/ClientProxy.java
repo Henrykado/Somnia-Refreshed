@@ -3,6 +3,7 @@ package com.kingrunes.somnia.client;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.client.gui.GuiSomnia;
 import com.kingrunes.somnia.common.CommonProxy;
+import com.kingrunes.somnia.common.SomniaConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -30,7 +31,7 @@ public class ClientProxy extends CommonProxy
 	public void handleGUIOpenPacket(DataInputStream in) throws IOException {
 		byte data = in.readByte();
 		final Minecraft mc = Minecraft.getMinecraft();
-		GuiScreen gui = data == 0x00 && somniaGui ? new GuiSomnia() : data == 0x01 ? new GuiSelectWakeTime() : null;
+		GuiScreen gui = data == 0x00 && SomniaConfig.OPTIONS.somniaGui ? new GuiSomnia() : data == 0x01 ? new GuiSelectWakeTime() : null;
 		if (gui != null) mc.addScheduledTask(() -> mc.displayGuiScreen(gui));
 	}
 

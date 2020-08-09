@@ -1,9 +1,9 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
-import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.common.capability.IFatigue;
@@ -27,7 +27,8 @@ public class ForgeEventHandler
 	{
 		event.addCapability(new ResourceLocation(Somnia.MOD_ID, "fatigue"), new FatigueCapabilityProvider());
 	}
-	
+
+	@SuppressWarnings("ConstantConditions")
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
@@ -42,9 +43,9 @@ public class ForgeEventHandler
 		boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isPlayerSleeping();
 		
 		if (isSleeping)
-			fatigue -= CommonProxy.fatigueReplenishRate;
+			fatigue -= SomniaConfig.FATIGUE.fatigueReplenishRate;
 		else
-			fatigue += CommonProxy.fatigueRate;
+			fatigue += SomniaConfig.FATIGUE.fatigueRate;
 		
 		if (fatigue > 100.0d)
 			fatigue = 100.0d;
@@ -58,27 +59,27 @@ public class ForgeEventHandler
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
 			
 			// Side effects
-			if (CommonProxy.fatigueSideEffects)
+			if (SomniaConfig.FATIGUE.fatigueSideEffects)
 			{
 				int lastSideEffectStage = props.getSideEffectStage();
-				if (fatigue > CommonProxy.sideEffectStage1 && lastSideEffectStage < CommonProxy.sideEffectStage1)
+				if (fatigue > SomniaConfig.SIDE_EFFECTS.sideEffectStage1 && lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage1)
 				{
-					props.setSideEffectStage(CommonProxy.sideEffectStage1);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage1Potion), CommonProxy.sideEffectStage1Duration, CommonProxy.sideEffectStage1Amplifier));
+					props.setSideEffectStage(SomniaConfig.SIDE_EFFECTS.sideEffectStage1);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage1Potion), SomniaConfig.SIDE_EFFECTS.sideEffectStage1Duration, SomniaConfig.SIDE_EFFECTS.sideEffectStage1Amplifier));
 				}
-				else if (fatigue > CommonProxy.sideEffectStage2 && lastSideEffectStage < CommonProxy.sideEffectStage2)
+				else if (fatigue > SomniaConfig.SIDE_EFFECTS.sideEffectStage2 && lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage2)
 				{
-					props.setSideEffectStage(CommonProxy.sideEffectStage2);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage2Potion), CommonProxy.sideEffectStage2Duration, CommonProxy.sideEffectStage2Amplifier));
+					props.setSideEffectStage(SomniaConfig.SIDE_EFFECTS.sideEffectStage2);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage2Potion), SomniaConfig.SIDE_EFFECTS.sideEffectStage2Duration, SomniaConfig.SIDE_EFFECTS.sideEffectStage2Amplifier));
 				}
-				else if (fatigue > CommonProxy.sideEffectStage3 && lastSideEffectStage < CommonProxy.sideEffectStage3)
+				else if (fatigue > SomniaConfig.SIDE_EFFECTS.sideEffectStage3 && lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage3)
 				{
-					props.setSideEffectStage(CommonProxy.sideEffectStage3);
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage3Potion), CommonProxy.sideEffectStage3Duration, CommonProxy.sideEffectStage3Amplifier));
+					props.setSideEffectStage(SomniaConfig.SIDE_EFFECTS.sideEffectStage3);
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage3Potion), SomniaConfig.SIDE_EFFECTS.sideEffectStage3Duration, SomniaConfig.SIDE_EFFECTS.sideEffectStage3Amplifier));
 				}
-				else if (fatigue > CommonProxy.sideEffectStage4)
-					player.addPotionEffect(new PotionEffect(Potion.getPotionById(CommonProxy.sideEffectStage4Potion), 150, CommonProxy.sideEffectStage4Amplifier));
-				else if (fatigue < CommonProxy.sideEffectStage1)
+				else if (fatigue > SomniaConfig.SIDE_EFFECTS.sideEffectStage4)
+					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage4Potion), 150, SomniaConfig.SIDE_EFFECTS.sideEffectStage4Amplifier));
+				else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1)
 					props.setSideEffectStage(-1);
 			}
 		}

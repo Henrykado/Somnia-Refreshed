@@ -3,6 +3,7 @@ package com.kingrunes.somnia.server;
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.util.SomniaState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -36,7 +37,7 @@ public class ServerTickHandler
 					liTps 				= 0, 		// Counts ticks
 					tps					= 0;		// Set per second to liTPS, used to work out actual multiplier to send to clients
 	
-	private double 	multiplier 			= CommonProxy.baseMultiplier;
+	private double 	multiplier 			= SomniaConfig.LOGIC.baseMultiplier;
 	
 	public ServerTickHandler(WorldServer worldServer)
 	{
@@ -138,11 +139,11 @@ public class ServerTickHandler
 		else
 			multiplier += .1d;
 		
-		if (multiplier > CommonProxy.multiplierCap)
-			multiplier = CommonProxy.multiplierCap;
+		if (multiplier > SomniaConfig.LOGIC.multiplierCap)
+			multiplier = SomniaConfig.LOGIC.multiplierCap;
 		
-		if (multiplier < CommonProxy.baseMultiplier)
-			multiplier = CommonProxy.baseMultiplier;
+		if (multiplier < SomniaConfig.LOGIC.baseMultiplier)
+			multiplier = SomniaConfig.LOGIC.baseMultiplier;
 		
 		long currentTimeMillis = System.currentTimeMillis();
 		if (currentTimeMillis-lastTpsMillis > 1000)

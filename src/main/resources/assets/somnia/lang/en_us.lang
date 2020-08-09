@@ -1,3 +1,12 @@
+somnia.config.title=Somnia Config
+somnia.config.fatigue=Fatigue
+somnia.config.sideEffects=Side effects
+somnia.config.sideEffects.tooltip=Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)
+somnia.config.logic=Logic
+somnia.config.options=Options
+somnia.config.performance=Performance
+somnia.config.timings=Timings
+
 somnia.status.armor=That armor looks uncomfortable
 somnia.status.cooldown=You're not tired yet
 somnia.status.expired=You can't sleep forever

@@ -1,6 +1,7 @@
 package com.kingrunes.somnia.common.util;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,7 +25,7 @@ public enum SomniaState
 		/*if (handler.currentState != ACTIVE && handler.lastSleepStart > 0 && totalWorldTime-handler.lastSleepStart < Somnia.proxy.sleepCooldown)
 			return COOLDOWN;*/
 		
-		if (!Somnia.proxy.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
+		if (!CommonProxy.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
 			return NOT_NOW;
 		
 		if (handler.worldServer.playerEntities.isEmpty())

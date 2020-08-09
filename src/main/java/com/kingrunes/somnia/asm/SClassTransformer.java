@@ -142,7 +142,8 @@ public class SClassTransformer implements IClassTransformer
 						m.instructions.insert(m.instructions.get(116), insnList2);
 
 						InsnList insnList3 = new InsnList(); //Add an ignoremonsters check to existing if statement
-						insnList3.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/CommonProxy", "ignoreMonsters", "Z"));
+						insnList3.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/SomniaConfig", "OPTIONS", "Lcom/kingrunes/somnia/common/SomniaConfig$Options;"));
+						insnList3.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "ignoreMonsters", "Z"));
 						JumpInsnNode ainsnode = (JumpInsnNode) m.instructions.get(204);
 						insnList3.add(new JumpInsnNode(IFNE, ainsnode.label));
 						m.instructions.insert(ainsnode, insnList3);
@@ -154,7 +155,8 @@ public class SClassTransformer implements IClassTransformer
 						m.instructions.remove(m.instructions.get(141));
 						insnList4.add(label195);
 						insnList4.add(new FrameNode(Opcodes.F_APPEND, 2, new Object[]{classBlockPos, classEntityPlayer}, 0, null));
-						insnList4.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/CommonProxy", "sleepWithArmor", "Z"));
+						insnList4.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/SomniaConfig", "OPTIONS", "Lcom/kingrunes/somnia/common/SomniaConfig$Options;"));
+						insnList4.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "sleepWithArmor", "Z"));
 						insnList4.add(new JumpInsnNode(IFNE, label20));
 						insnList4.add(new VarInsnNode(ALOAD, 0));
 						insnList4.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "doesPlayHaveAnyArmor", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
@@ -180,7 +182,7 @@ public class SClassTransformer implements IClassTransformer
 						//Send GuiOpen packet
 						InsnList insnList5 = new InsnList();
 						LabelNode label425 = new LabelNode();
-						JumpInsnNode jump = (JumpInsnNode)m.instructions.get(365);
+						JumpInsnNode jump = (JumpInsnNode)m.instructions.get(367);
 						LabelNode label43 = jump.label;
 						jump.label = label425;
 						insnList5.add(label425);
@@ -195,7 +197,7 @@ public class SClassTransformer implements IClassTransformer
 						insnList5.add(new VarInsnNode(ALOAD, 0));
 						insnList5.add(new TypeInsnNode(CHECKCAST, classEntityPlayerMP));
 						insnList5.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraftforge/fml/common/network/FMLEventChannel", "sendTo", "(Lnet/minecraftforge/fml/common/network/internal/FMLProxyPacket;Lnet/minecraft/entity/player/EntityPlayerMP;)V", false));
-						m.instructions.insert(m.instructions.get(370), insnList5);
+						m.instructions.insert(m.instructions.get(372), insnList5);
 					}
 				}
 				for (AbstractInsnNode insn : m.instructions.toArray()) System.out.println("ins: " + insn + "   " + m.instructions.indexOf(insn) + "   " + (insn instanceof LineNumberNode ? ((LineNumberNode) insn).line : ""));

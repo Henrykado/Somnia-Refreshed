@@ -1,6 +1,5 @@
 package com.kingrunes.somnia.common;
 
-import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.common.util.ClassUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -37,7 +36,7 @@ public class PlayerSleepTickHandler
 			state.sleepOverride = true;
 			ClassUtils.setSleeping(player, false);
 			
-			if (player.world.isRemote && Somnia.proxy.fading)
+			if (player.world.isRemote && SomniaConfig.OPTIONS.fading)
 			{
 				int sleepTimer = player.getSleepTimer()+1;
 				if (sleepTimer >= 99)

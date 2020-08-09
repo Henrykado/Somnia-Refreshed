@@ -2,8 +2,8 @@ package com.kingrunes.somnia.client;
 
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.client.gui.GuiSomnia;
-import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiIngameMenu;
@@ -46,7 +46,7 @@ public class ClientTickHandler
 		
 		if (mc.currentScreen instanceof GuiSleepMP)
 		{
-			if (CommonProxy.vanillaBugFixes)
+			if (SomniaConfig.OPTIONS.vanillaBugFixes)
 			{
 				if (!moddedFOV)
 				{
@@ -73,7 +73,7 @@ public class ClientTickHandler
 		
 		if (mc.player.isPlayerSleeping())
 		{
-			if (CommonProxy.muteSoundWhenSleeping)
+			if (SomniaConfig.OPTIONS.muteSoundWhenSleeping)
 			{
 				if (!muted)
 				{
@@ -115,7 +115,7 @@ public class ClientTickHandler
 		ScaledResolution scaledResolution = new ScaledResolution(mc);
 		String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
 		int x, y, stringWidth = fontRenderer.getStringWidth(str);
-		String param = Somnia.proxy.displayFatigue.toLowerCase();
+		String param = SomniaConfig.FATIGUE.displayFatigue.toLowerCase();
 		switch (param) {
 			case "tc":
 				x = (scaledResolution.getScaledWidth() / 2 ) - (stringWidth / 2);
