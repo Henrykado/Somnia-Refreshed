@@ -93,7 +93,7 @@ public class ClientTickHandler
 		 * Fixes some rendering issues with high FOVs when the GUIs are open during sleep
 		 */
 		
-		if (mc.currentScreen instanceof GuiSleepMP)
+		if (mc.player.isPlayerSleeping())
 		{
 			if (SomniaConfig.OPTIONS.vanillaBugFixes)
 			{
