@@ -176,26 +176,6 @@ public class SClassTransformer implements IClassTransformer
 						insnList4.add(new FieldInsnNode(GETSTATIC, classSleepResult, fieldOtherProblem, descSleepResult));
 						insnList4.add(new InsnNode(ARETURN));
 						m.instructions.insert(m.instructions.get(145), insnList4);
-
-						//Send GuiOpen packet
-						InsnList insnList5 = new InsnList();
-						LabelNode label425 = new LabelNode();
-						JumpInsnNode jump = (JumpInsnNode)m.instructions.get(367);
-						LabelNode label43 = jump.label;
-						jump.label = label425;
-						insnList5.add(label425);
-						insnList5.add(new VarInsnNode(ALOAD, 0));
-						insnList5.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldWorld, descWorld));
-						insnList5.add(new FieldInsnNode(GETFIELD, classWorld, fieldIsRemote, "Z"));
-						insnList5.add(new JumpInsnNode(IFNE, label43));
-						LabelNode label426 = new LabelNode();
-						insnList5.add(label426);
-						insnList5.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/Somnia", "eventChannel", "Lnet/minecraftforge/fml/common/network/FMLEventChannel;"));
-						insnList5.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/common/PacketHandler", "buildGUIOpenPacket", "()Lnet/minecraftforge/fml/common/network/internal/FMLProxyPacket;", false));
-						insnList5.add(new VarInsnNode(ALOAD, 0));
-						insnList5.add(new TypeInsnNode(CHECKCAST, classEntityPlayerMP));
-						insnList5.add(new MethodInsnNode(INVOKEVIRTUAL, "net/minecraftforge/fml/common/network/FMLEventChannel", "sendTo", "(Lnet/minecraftforge/fml/common/network/internal/FMLProxyPacket;Lnet/minecraft/entity/player/EntityPlayerMP;)V", false));
-						m.instructions.insert(m.instructions.get(372), insnList5);
 					}
 				}
 				for (AbstractInsnNode insn : m.instructions.toArray()) System.out.println("ins: " + insn + "   " + m.instructions.indexOf(insn) + "   " + (insn instanceof LineNumberNode ? ((LineNumberNode) insn).line : ""));

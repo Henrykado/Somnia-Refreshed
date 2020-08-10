@@ -89,14 +89,9 @@ public class PacketHandler
 
 		state.getBlock().onBlockActivated(player.world, pos, state, player, EnumHand.MAIN_HAND, facing, in.readFloat(), in.readFloat(), in.readFloat());
 	}
-	
-	public static FMLProxyPacket buildGUIOpenPacket()
-	{
-		return doBuildGUIOpenPacket((byte) 0x00);
-	}
 
 	public static FMLProxyPacket buildGuiSelectWakeTimePacket() {
-		return doBuildGUIOpenPacket((byte) 0x01);
+		return doBuildGUIOpenPacket((byte) 0x00);
 	}
 
 	/**

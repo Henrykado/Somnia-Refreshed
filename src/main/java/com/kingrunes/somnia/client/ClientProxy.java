@@ -1,9 +1,7 @@
 package com.kingrunes.somnia.client;
 
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
-import com.kingrunes.somnia.client.gui.GuiSomnia;
 import com.kingrunes.somnia.common.CommonProxy;
-import com.kingrunes.somnia.common.SomniaConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,20 +16,21 @@ import java.io.IOException;
 public class ClientProxy extends CommonProxy
 {
 	public static double playerFatigue = -1;
+	public static final ClientTickHandler clientTickHandler = new ClientTickHandler();
 	
 	@Override
 	public void register()
 	{
 		super.register();
 		MinecraftForge.EVENT_BUS.register(this);
-		MinecraftForge.EVENT_BUS.register(new ClientTickHandler());
+		MinecraftForge.EVENT_BUS.register(clientTickHandler);
 	}
 	
 	@Override
 	public void handleGUIOpenPacket(DataInputStream in) throws IOException {
 		byte data = in.readByte();
 		final Minecraft mc = Minecraft.getMinecraft();
-		GuiScreen gui = data == 0x00 && SomniaConfig.OPTIONS.somniaGui ? new GuiSomnia() : data == 0x01 ? new GuiSelectWakeTime() : null;
+		GuiScreen gui = data == 0x00 ? new GuiSelectWakeTime() : null;
 		if (gui != null) mc.addScheduledTask(() -> mc.displayGuiScreen(gui));
 	}
 
@@ -43,14 +42,11 @@ public class ClientProxy extends CommonProxy
 		switch (target)
 		{
 		case 0x00:
-			GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-			if (currentScreen instanceof GuiSomnia)
+			if (Minecraft.getMinecraft().player.isPlayerSleeping())
 			{
-				GuiSomnia gui = (GuiSomnia)currentScreen;
-				
 				int b = in.readInt();
 				for (int a=0; a<b; a++)
-					gui.readField(in);
+					clientTickHandler.readField(in);
 			}
 			break;
 		case 0x01:

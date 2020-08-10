@@ -2,11 +2,9 @@ package com.kingrunes.somnia.asm;
 
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
-import com.kingrunes.somnia.SomniaVersion;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class SDummyContainer extends DummyModContainer
 {
