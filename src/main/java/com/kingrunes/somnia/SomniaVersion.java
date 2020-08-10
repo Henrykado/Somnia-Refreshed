@@ -9,14 +9,6 @@ public class SomniaVersion
 							// Incremented when a bugfix is made and the mod can be considered 'stable', reset with every new MINOR_VERSION
 							REVISION_VERSION = 2;
 							// Incremented automatically by the build system, never reset
-	
-							// Incremented when a significant change to the mod is made, never reset
-	public static final int CORE_MAJOR_VERSION = 2,
-							// Incremented for new features or significant rewrites, reset with every new MAJOR_VERSION
-							CORE_MINOR_VERSION = 0,
-							// Incremented when a bugfix is made and the mod can be considered 'stable', reset with every new MINOR_VERSION
-							CORE_REVISION_VERSION = 0;
-							// Incremented automatically by the build system, never reset
 
 	public static final int BUILD = 0;
 	
@@ -25,11 +17,6 @@ public class SomniaVersion
 	public static String getVersionString()
 	{
 		return String.format(FORMAT, MAJOR_VERSION, MINOR_VERSION, REVISION_VERSION, BUILD);
-	}
-	
-	public static String getCoreVersionString()
-	{
-		return String.format(FORMAT, CORE_MAJOR_VERSION, CORE_MINOR_VERSION, CORE_REVISION_VERSION, BUILD);
 	}
 	
 	public static boolean isHigher(String versionString)
