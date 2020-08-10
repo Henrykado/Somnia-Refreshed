@@ -249,7 +249,8 @@ public class ClientTickHandler
 			renderProgressBar(x, 10, maxWidth, progress);
 
 			// Multiplier
-			renderScaledString(x, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
+			int offsetX = SomniaConfig.FATIGUE.displayETASleep.equals("center") ? scaledResolution.getScaledWidth()/2 - 80 : SomniaConfig.FATIGUE.displayETASleep.equals("right") ? maxWidth - 160 : 0;
+			renderScaledString(scaledResolution, x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
 
 			// ETA
 			double total = 0.0d;
@@ -261,7 +262,7 @@ public class ClientTickHandler
 			int etaSeconds = etaTotalSeconds % 60,
 					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
 
-			renderScaledString(x + 50 + 10, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+			renderScaledString(scaledResolution, x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 
 			// Clock
 			renderClock(maxWidth - 40, 30, 4.0f);
@@ -280,7 +281,7 @@ public class ClientTickHandler
 		}
 	}
 
-	private void renderScaledString(int x, int y, float scale, String format, Object... args)
+	private void renderScaledString(ScaledResolution scaledResolution, int x, int y, float scale, String format, Object... args)
 	{
 		if (mc.currentScreen == null) return;
 		String str = String.format(format, args);

@@ -37,7 +37,7 @@ public class SomniaConfig {
         public String displayFatigue = "br";
 
         @Config.Comment("The ETA and multiplier display position in somnia's sleep gui. Accepted values: right, center, left")
-        public String displayETASleep = "right";
+        public String displayETASleep = "left";
 
         @Config.Comment("Fatigue is incremented by this number every tick")
         public double fatigueRate = 0.00208;
