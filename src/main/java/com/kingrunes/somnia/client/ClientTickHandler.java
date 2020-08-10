@@ -50,7 +50,7 @@ public class ClientTickHandler
 	private boolean muted = false;
 	private float defVol;
 
-	private static final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
+	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 
 	public long startTicks = -1L;
 	public double speed = 0;
