@@ -4,10 +4,10 @@
   "name": "Somnia",
   "description": "Somnia simulates the world while you sleep.",
   "mcversion": "1.12.2",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "url": "https://www.curseforge.com/minecraft/mc-mods/somnia",
   "authorList": ["Kingrunes", "Su5eD"],
-  "credits": "Kingrunes",
+  "credits": "Kingrunes, Su5eD",
   "screenshots": [],
   "dependencies": []
 }
