@@ -29,8 +29,6 @@ public class SClassTransformer implements IClassTransformer
 			return patchChunk(bytes, true);
 		else if (name.equalsIgnoreCase("net.minecraft.server.MinecraftServer"))
 			return patchMinecraftServer(bytes);
-		else if (name.equalsIgnoreCase("net.minecraft.item.ItemClock") || name.equalsIgnoreCase("ahl"))
-			return patchItemClock(bytes);
 		else if (name.equalsIgnoreCase("net.minecraft.entity.player.EntityPlayer"))
 			return patchEntityPlayer(bytes, false);
 		else if (name.equalsIgnoreCase("aed"))
@@ -52,7 +50,7 @@ public class SClassTransformer implements IClassTransformer
 		classReader.accept(classNode, 0);
 
 		for (MethodNode m : classNode.methods) {
-			if (m.name.equals(methodOnBlockActivated) && m.desc.equals(descOnBlockActivated)) {
+			if (m.name.equals(methodOnBlockActivated) && m.desc.equals(descOnBlockActivated)) { //TODO: Move to EntityPlayer#trySleep
 				//Add wake time calculation
 				InsnList insnList = new InsnList();
 				insnList.add(new FrameNode(Opcodes.F_APPEND, 1, new Object[]{classItemStack}, 0, null)); //TODO: Do I need this?
@@ -386,32 +384,6 @@ public class SClassTransformer implements IClassTransformer
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(cw);
 		System.out.println("[Somnia Core] Successfully patched MinecraftServer");
-		return cw.toByteArray();
-	}
-
-	private byte[] patchItemClock(byte[] bytes) {
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
-		MethodNode methodNode = new MethodNode(Opcodes.ACC_PUBLIC, "onItemUseFirst", "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;FFFLnet/minecraft/util/EnumHand;)Lnet/minecraft/util/EnumActionResult;", null, null);
-		methodNode.visitCode();
-		methodNode.visitVarInsn(ALOAD, 1);
-		methodNode.visitVarInsn(ALOAD, 2);
-		methodNode.visitVarInsn(ALOAD, 3);
-		methodNode.visitVarInsn(ALOAD, 4);
-		methodNode.visitVarInsn(FLOAD, 5);
-		methodNode.visitVarInsn(FLOAD, 6);
-		methodNode.visitVarInsn(FLOAD, 7);
-		methodNode.visitVarInsn(ALOAD, 8);
-		methodNode.visitMethodInsn(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/Somnia", "onItemUseFirst", "(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;FFFLnet/minecraft/util/EnumHand;)Lnet/minecraft/util/EnumActionResult;", false);
-		methodNode.visitInsn(Opcodes.ARETURN);
-		methodNode.visitEnd();
-
-		classNode.methods.add(methodNode);
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched ItemClock");
 		return cw.toByteArray();
 	}
 }

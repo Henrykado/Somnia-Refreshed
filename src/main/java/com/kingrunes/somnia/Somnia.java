@@ -1,6 +1,5 @@
 package com.kingrunes.somnia;
 
-import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
@@ -9,17 +8,10 @@ import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.SomniaState;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -193,27 +185,6 @@ public class Somnia
 		}
 		
 		chunk.checkLight();
-	}
-
-	@SuppressWarnings("unused")
-	public static EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
-		IBlockState state = world.getBlockState(pos);
-
-		if (state.getBlock() == Blocks.BED)
-		{
-			ItemStack currentItem = player.inventory.getCurrentItem();
-			if (currentItem != ItemStack.EMPTY && currentItem.getItem() == Items.CLOCK) {
-				if (world.isRemote) {
-					Minecraft minecraft = Minecraft.getMinecraft();
-					if (minecraft.currentScreen instanceof GuiSelectWakeTime) return EnumActionResult.FAIL;
-				}
-				else Somnia.eventChannel.sendTo(PacketHandler.buildGuiSelectWakeTimePacket(), (EntityPlayerMP) player);
-
-				return EnumActionResult.SUCCESS;
-			}
-		}
-		boolean sleepWithArmor = SomniaConfig.OPTIONS.sleepWithArmor;
-		return EnumActionResult.PASS;
 	}
 
 	@SuppressWarnings("unused")

@@ -109,6 +109,8 @@ public class SomniaConfig {
         public boolean somniaGui = true;
         @Config.Comment("Applies a very small FOV while sleeping, because a vanilla bug makes you face in a wrong direction when your bed doesn't face north")
         public boolean vanillaBugFixes = true;
+        @Config.Comment("Item used to select wake time")
+        public String wakeTimeSelectItem = "minecraft:clock";
     }
 
     /*public static class Profiling { Profiling might come later
