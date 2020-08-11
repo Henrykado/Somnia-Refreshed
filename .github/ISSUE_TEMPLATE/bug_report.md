@@ -10,6 +10,9 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+**Is this bug related to another mod?**
+
+
 **To Reproduce**
 Steps to reproduce the bug:
 1.
