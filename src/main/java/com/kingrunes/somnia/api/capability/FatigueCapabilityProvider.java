@@ -1,4 +1,4 @@
-package com.kingrunes.somnia.common.capability;
+package com.kingrunes.somnia.api.capability;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;

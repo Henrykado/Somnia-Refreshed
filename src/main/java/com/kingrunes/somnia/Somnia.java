@@ -1,10 +1,10 @@
 package com.kingrunes.somnia;
 
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
-import com.kingrunes.somnia.common.capability.CapabilityFatigue;
-import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.SomniaState;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;

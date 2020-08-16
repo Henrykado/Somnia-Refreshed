@@ -166,7 +166,8 @@ public class ClientTickHandler
 	@SubscribeEvent
 	public void onRenderTick(TickEvent.RenderTickEvent event)
 	{
-		if ((mc.currentScreen != null && !(mc.currentScreen instanceof GuiIngameMenu))) {
+		if (mc.player != null && mc.player.capabilities.isCreativeMode) return;
+		else if ((mc.currentScreen != null && !(mc.currentScreen instanceof GuiIngameMenu))) {
 			if (mc.player == null || !mc.player.isPlayerSleeping()) return;
 		}
 		

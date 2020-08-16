@@ -1,8 +1,8 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
-import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;

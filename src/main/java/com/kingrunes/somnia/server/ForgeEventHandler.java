@@ -1,12 +1,12 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
-import com.kingrunes.somnia.common.capability.CapabilityFatigue;
-import com.kingrunes.somnia.common.capability.FatigueCapabilityProvider;
-import com.kingrunes.somnia.common.capability.IFatigue;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -16,6 +16,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -32,7 +33,7 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
-		if (event.phase != Phase.START || event.player.world.isRemote) return;
+		if (event.phase != Phase.START || event.player.world.isRemote || event.player.capabilities.isCreativeMode) return;
 		
 		EntityPlayer player = event.player;
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
@@ -79,9 +80,19 @@ public class ForgeEventHandler
 				}
 				else if (fatigue > SomniaConfig.SIDE_EFFECTS.sideEffectStage4)
 					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage4Potion), 150, SomniaConfig.SIDE_EFFECTS.sideEffectStage4Amplifier));
-				else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1)
+				else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1) {
 					props.setSideEffectStage(-1);
+					player.clearActivePotions();
+				}
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onWakeUp(PlayerWakeUpEvent event) {
+		IFatigue props = event.getEntityPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null) {
+			props.maxFatigueCounter();
 		}
 	}
 

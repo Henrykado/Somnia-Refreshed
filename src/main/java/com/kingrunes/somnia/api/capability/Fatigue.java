@@ -1,4 +1,4 @@
-package com.kingrunes.somnia.common.capability;
+package com.kingrunes.somnia.api.capability;
 
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -42,6 +42,11 @@ public class Fatigue implements IFatigue {
     public void resetFatigueCounter()
     {
         this.fatigueUpdateCounter = 0;
+    }
+
+    @Override
+    public void maxFatigueCounter() {
+        this.fatigueUpdateCounter = 100;
     }
 
 

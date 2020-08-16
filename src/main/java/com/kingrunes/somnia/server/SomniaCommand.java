@@ -1,9 +1,9 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
-import com.kingrunes.somnia.common.capability.CapabilityFatigue;
-import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.ListUtils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;

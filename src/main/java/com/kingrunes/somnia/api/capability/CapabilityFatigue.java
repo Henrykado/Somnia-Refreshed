@@ -1,4 +1,4 @@
-package com.kingrunes.somnia.common.capability;
+package com.kingrunes.somnia.api.capability;
 
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;

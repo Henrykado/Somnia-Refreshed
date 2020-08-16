@@ -64,7 +64,6 @@ public class ClientProxy extends CommonProxy
 	@Override
 	public void handleGUIClosePacket(EntityPlayerMP player)
 	{
-		if (player.world.isRemote) Minecraft.getMinecraft().displayGuiScreen(null);
 		player.wakeUpPlayer(true, true, true);
 	}
 }

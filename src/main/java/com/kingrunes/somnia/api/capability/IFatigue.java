@@ -1,4 +1,4 @@
-package com.kingrunes.somnia.common.capability;
+package com.kingrunes.somnia.api.capability;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -15,4 +15,6 @@ public interface IFatigue extends INBTSerializable<NBTTagCompound> {
     int updateFatigueCounter();
 
     void resetFatigueCounter();
+
+    void maxFatigueCounter();
 }
