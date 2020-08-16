@@ -127,17 +127,6 @@ public class CommonProxy
 		}
 	}
 
-	/*@SubscribeEvent
-	public void onGuiDraw(GuiScreenEvent event) {
-		Minecraft mc = Minecraft.getMinecraft();
-		if (mc.player == null) return;
-
-		if (mc.player.isPlayerSleeping() && SomniaConfig.OPTIONS.somniaGui && !(event.getGui() instanceof GuiSomnia)) {
-			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSomnia()));
-			event.setCanceled(true);
-		}
-	}*/
-
 	/*
 	 * The following methods are implemented client-side only
 	 */
