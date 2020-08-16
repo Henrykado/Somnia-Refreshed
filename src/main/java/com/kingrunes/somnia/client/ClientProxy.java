@@ -62,7 +62,7 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
-	public void handleGUIClosePacket(EntityPlayerMP player)
+	public void handleWakePacket(EntityPlayerMP player)
 	{
 		player.wakeUpPlayer(true, true, true);
 	}

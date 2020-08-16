@@ -50,7 +50,7 @@ public class PacketHandler
 				handleGUIOpenPacket(in);
 				break;
 			case 0x01:
-				handleGUIClosePacket(player, in);
+				handleWakePacket(player, in);
 				break;
 			case 0x02:
 				handlePropUpdatePacket(in);
@@ -77,9 +77,9 @@ public class PacketHandler
 	}
 	
 	
-	private void handleGUIClosePacket(EntityPlayerMP player, DataInputStream in)
+	private void handleWakePacket(EntityPlayerMP player, DataInputStream in)
 	{
-		Somnia.proxy.handleGUIClosePacket(player);
+		Somnia.proxy.handleWakePacket(player);
 	}
 
 	private void handleRightClickBlockPacket(EntityPlayerMP player, DataInputStream in) throws IOException {
@@ -106,12 +106,12 @@ public class PacketHandler
     	return new FMLProxyPacket(buffer, Somnia.MOD_ID);
 	}
 	
-	public static FMLProxyPacket buildGUIClosePacket()
+	public static FMLProxyPacket buildWakePacket()
 	{
-		return doBuildGUIClosePacket();
+		return doBuildWakePacket();
 	}
 
-	public static FMLProxyPacket doBuildGUIClosePacket()
+	public static FMLProxyPacket doBuildWakePacket()
 	{
 		PacketBuffer buffer = unpooled();
 		

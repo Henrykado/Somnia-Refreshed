@@ -141,7 +141,7 @@ public class ClientTickHandler
 					gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
 				}
 			}
-			if (mc.player.isPlayerSleeping() && !net.minecraftforge.event.ForgeEventFactory.fireSleepingLocationCheck(mc.player, mc.player.bedLocation)) Somnia.eventChannel.sendToServer(PacketHandler.buildGUIClosePacket());
+			if (mc.player.isPlayerSleeping() && !net.minecraftforge.event.ForgeEventFactory.fireSleepingLocationCheck(mc.player, mc.player.bedLocation)) Somnia.eventChannel.sendToServer(PacketHandler.buildWakePacket());
 		}
 		else
 		{
@@ -159,7 +159,7 @@ public class ClientTickHandler
 		if (Somnia.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= Somnia.clientAutoWakeTime)
 		{
 			Somnia.clientAutoWakeTime = -1;
-			Somnia.eventChannel.sendToServer(PacketHandler.buildGUIClosePacket());
+			Somnia.eventChannel.sendToServer(PacketHandler.buildWakePacket());
 		}
 	}
 	

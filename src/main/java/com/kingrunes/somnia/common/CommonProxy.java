@@ -123,7 +123,7 @@ public class CommonProxy
 			if (!(event.getEntityLiving()).isPlayerSleeping())
 				return;
 			
-	        Somnia.eventChannel.sendTo(PacketHandler.buildGUIClosePacket(), (EntityPlayerMP) event.getEntityLiving());
+	        Somnia.eventChannel.sendTo(PacketHandler.buildWakePacket(), (EntityPlayerMP) event.getEntityLiving());
 		}
 	}
 
@@ -137,6 +137,6 @@ public class CommonProxy
 	public void handlePropUpdatePacket(DataInputStream in) throws IOException
 	{}
 
-	public void handleGUIClosePacket(EntityPlayerMP player)
+	public void handleWakePacket(EntityPlayerMP player)
 	{}
 }

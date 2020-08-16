@@ -89,7 +89,7 @@ public class ServerTickHandler
 	
 	private void closeGuiWithMessage(@Nullable String key)
 	{
-		FMLProxyPacket packet = PacketHandler.buildGUIClosePacket();
+		FMLProxyPacket packet = PacketHandler.buildWakePacket();
 
 		Iterator<EntityPlayer> iter = worldServer.playerEntities.iterator();
 		EntityPlayer ep;
