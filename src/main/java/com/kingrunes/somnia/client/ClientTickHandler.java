@@ -5,10 +5,14 @@ import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.StreamUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiIngameMenu;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -56,6 +60,12 @@ public class ClientTickHandler
 	public double speed = 0;
 	private final List<Double> speedValues = new ArrayList<>();
 	public String status = "Waiting...";
+
+	public ClientTickHandler() {
+		NBTTagCompound clockNbt = new NBTTagCompound();
+		clockNbt.setBoolean("quark:clock_calculated", true);
+		this.clockItemStack.setTagCompound(clockNbt); //Disables Quark's clock display override
+	}
 	
 	@SubscribeEvent
 	public void onClientTick(TickEvent.ClientTickEvent event)
