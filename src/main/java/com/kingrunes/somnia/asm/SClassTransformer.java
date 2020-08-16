@@ -76,13 +76,11 @@ public class SClassTransformer implements IClassTransformer
 				classTextComponentTranslation = obf ? "hp" : "net/minecraft/util/text/TextComponentTranslation",
 				classSleepResult = obf ? "aed$a" : "net/minecraft/entity/player/EntityPlayer$SleepResult",
 				classBlockPos = obf ? "et" : "net/minecraft/util/math/BlockPos",
-				classEntityPlayerMP = obf ? "oq" : "net/minecraft/entity/player/EntityPlayerMP",
 				descSleep = obf ? "(Let;)Laed$a;" : "(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/entity/player/EntityPlayer$SleepResult;",
 				descWorld = obf ? "Lamu;" : "Lnet/minecraft/world/World;",
 				descSleepResult = obf ? "Laed$a;" : "Lnet/minecraft/entity/player/EntityPlayer$SleepResult;",
 				descSendStatusMessage = obf ? "(Lhh;Z)V" : "(Lnet/minecraft/util/text/ITextComponent;Z)V",
 				fieldWorld = obf ? "l" : "world",
-				fieldIsRemote = obf ? "G" : "isRemote",
 				fieldOtherProblem = obf ? "e" : "OTHER_PROBLEM";
 
 		ClassNode classNode = new ClassNode();
@@ -178,8 +176,6 @@ public class SClassTransformer implements IClassTransformer
 						m.instructions.insert(m.instructions.get(145), insnList4);
 					}
 				}
-				for (AbstractInsnNode insn : m.instructions.toArray()) System.out.println("ins: " + insn + "   " + m.instructions.indexOf(insn) + "   " + (insn instanceof LineNumberNode ? ((LineNumberNode) insn).line : ""));
-
 				break;
 			}
 		}
