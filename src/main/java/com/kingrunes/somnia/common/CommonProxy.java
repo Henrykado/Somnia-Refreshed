@@ -11,7 +11,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -54,17 +53,7 @@ public class CommonProxy
 		EntityPlayer player = event.getEntityPlayer();
 		IBlockState state = world.getBlockState(pos);
 
-		if (state.getBlock() == Blocks.BED) {
-
-			if (state.getValue(BlockBed.PART) != BlockBed.EnumPartType.HEAD) {
-				pos = pos.offset(state.getValue(BlockBed.FACING));
-				state = world.getBlockState(pos);
-
-				if (!(state.getBlock() instanceof BlockBed)) {
-					return;
-				}
-			}
-		}
+		if (!(state.getBlock() instanceof BlockBed)) return;
 
 		if (Math.abs(player.posX - (double)pos.getX()) < 3.0D && Math.abs(player.posY - (double)pos.getY()) < 2.0D && Math.abs(player.posZ - (double)pos.getZ()) < 3.0D)
 		{
