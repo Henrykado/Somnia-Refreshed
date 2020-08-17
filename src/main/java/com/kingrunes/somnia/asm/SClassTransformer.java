@@ -18,8 +18,7 @@ public class SClassTransformer implements IClassTransformer
 			"net.minecraft.world.WorldServer",
 			"net.minecraft.world.chunk.Chunk",
 			"net.minecraft.server.MinecraftServer",
-			"net.minecraft.entity.player.EntityPlayer",
-			"net.minecraft.block.BlockBed");
+			"net.minecraft.entity.player.EntityPlayer");
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes)
 	{
@@ -50,32 +49,12 @@ public class SClassTransformer implements IClassTransformer
 			case 4:
 				patchEntityPlayer(classNode, obf);
 				break;
-			case 5:
-				patchBlockBed(classNode, obf);
-				break;
 		}
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(cw);
 		System.out.println("[Somnia Core] Successfully patched class "+className);
 		return cw.toByteArray();
-	}
-
-	private void patchBlockBed(ClassNode classNode, boolean obf) {
-		String 	methodOnBlockActivated = obf ? "a" : "onBlockActivated",
-				descOnBlockActivated = obf ? "(Lamu;Let;Lawt;Laed;Lub;Lfa;FFF)Z" : "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z",
-				classItemStack = obf ? "aip" : "net/minecraft/item/ItemStack";
-
-		for (MethodNode m : classNode.methods) {
-			if (m.name.equals(methodOnBlockActivated) && m.desc.equals(descOnBlockActivated)) { //TODO: Move to EntityPlayer#trySleep
-				//Add wake time calculation
-				InsnList insnList = new InsnList();
-				insnList.add(new VarInsnNode(ALOAD, 1));
-				insnList.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/world/World;)V", false));
-				m.instructions.insert(m.instructions.get(6), insnList);
-				break;
-			}
-		}
 	}
 
 	private void patchEntityPlayer(ClassNode classNode, boolean obf) {
@@ -181,6 +160,11 @@ public class SClassTransformer implements IClassTransformer
 						insnList4.add(new FieldInsnNode(GETSTATIC, classSleepResult, fieldOtherProblem, descSleepResult));
 						insnList4.add(new InsnNode(ARETURN));
 						m.instructions.insert(m.instructions.get(145), insnList4);
+
+						InsnList insnList5 = new InsnList();
+						insnList5.add(new VarInsnNode(ALOAD, 0));
+						insnList5.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/entity/player/EntityPlayer;)V", false));
+						m.instructions.insert(m.instructions.get(375), insnList5);
 					}
 				}
 				break;

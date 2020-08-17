@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.Mod;
@@ -188,8 +187,8 @@ public class Somnia
 	}
 
 	@SuppressWarnings("unused")
-	public static void updateWakeTime(World world) {
-		long totalWorldTime = world.getTotalWorldTime();
+	public static void updateWakeTime(EntityPlayer player) {
+		long totalWorldTime = player.world.getTotalWorldTime();
 		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
 	}
 

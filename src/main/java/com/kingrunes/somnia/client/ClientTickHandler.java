@@ -141,7 +141,6 @@ public class ClientTickHandler
 					gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
 				}
 			}
-			if (mc.player.isPlayerSleeping() && !net.minecraftforge.event.ForgeEventFactory.fireSleepingLocationCheck(mc.player, mc.player.bedLocation)) Somnia.eventChannel.sendToServer(PacketHandler.buildWakePacket());
 		}
 		else
 		{

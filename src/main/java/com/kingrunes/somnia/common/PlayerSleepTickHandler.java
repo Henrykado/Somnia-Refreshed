@@ -2,6 +2,7 @@ package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.common.util.ClassUtils;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -33,6 +34,12 @@ public class PlayerSleepTickHandler
 	{
 		if (player.isPlayerSleeping())
 		{
+			BlockPos pos = player.bedLocation;
+			if (!CompatModule.shouldSimulate(player, pos)) {
+				state.sleepOverride = false;
+				return;
+			}
+
 			state.sleepOverride = true;
 			ClassUtils.setSleeping(player, false);
 			
