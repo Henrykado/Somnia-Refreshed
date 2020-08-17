@@ -82,7 +82,9 @@ public class ForgeEventHandler
 					player.addPotionEffect(new PotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage4Potion), 150, SomniaConfig.SIDE_EFFECTS.sideEffectStage4Amplifier));
 				else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1) {
 					props.setSideEffectStage(-1);
-					player.clearActivePotions();
+					if (lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage2) player.removePotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage2Potion));
+					else if (lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage3) player.removePotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage3Potion));
+					else if (lastSideEffectStage < SomniaConfig.SIDE_EFFECTS.sideEffectStage4) player.removePotionEffect(Potion.getPotionById(SomniaConfig.SIDE_EFFECTS.sideEffectStage4Potion));
 				}
 			}
 		}
