@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.asm;
 
+import com.google.common.collect.Lists;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -7,67 +8,77 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
+import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class SClassTransformer implements IClassTransformer
 {
+	private static final List<String> transformedClasses = Lists.newArrayList("net.minecraft.client.renderer.EntityRenderer",
+			"net.minecraft.world.WorldServer",
+			"net.minecraft.world.chunk.Chunk",
+			"net.minecraft.server.MinecraftServer",
+			"net.minecraft.entity.player.EntityPlayer",
+			"net.minecraft.block.BlockBed");
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes)
 	{
-		if (name.equalsIgnoreCase("net.minecraft.client.renderer.EntityRenderer"))
-			return patchEntityRenderer(bytes, false);
-		else if (name.equalsIgnoreCase("buq"))
-			return patchEntityRenderer(bytes, true);
-		else if (name.equalsIgnoreCase("net.minecraft.world.WorldServer"))
-			return patchWorldServer(bytes, false);
-		else if (name.equalsIgnoreCase("oo"))
-			return patchWorldServer(bytes, true);
-		else if (name.equalsIgnoreCase("net.minecraft.world.chunk.Chunk"))
-			return patchChunk(bytes, false);
-		else if (name.equalsIgnoreCase("axw"))
-			return patchChunk(bytes, true);
-		else if (name.equalsIgnoreCase("net.minecraft.server.MinecraftServer"))
-			return patchMinecraftServer(bytes);
-		else if (name.equalsIgnoreCase("net.minecraft.entity.player.EntityPlayer"))
-			return patchEntityPlayer(bytes, false);
-		else if (name.equalsIgnoreCase("aed"))
-			return patchEntityPlayer(bytes, true);
-		else if (name.equalsIgnoreCase("net.minecraft.block.BlockBed"))
-			return patchBlockBed(bytes, false);
-		else if (name.equalsIgnoreCase("aou"))
-			return patchBlockBed(bytes, true);
-		return bytes;
+		int index  = transformedClasses.indexOf(transformedName);
+		boolean obf = !name.equals(transformedName);
+		String[] split =  transformedName.split("\\.");
+		return index > -1 ? transform(index, bytes, obf, split[split.length - 1]) : bytes;
 	}
 
-	private byte[] patchBlockBed(byte[] bytes, boolean obf) {
-		String 	methodOnBlockActivated = obf ? "a" : "onBlockActivated",
-				descOnBlockActivated = obf ? "(Lamu;Let;Lawt;Laed;Lub;Lfa;FFF)Z" : "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z",
-				classItemStack = obf ? "aip" : "net/minecraft/item/ItemStack";
-
+	private byte[] transform(int index, byte[] bytes, boolean obf, String className) {
 		ClassNode classNode = new ClassNode();
 		ClassReader classReader = new ClassReader(bytes);
 		classReader.accept(classNode, 0);
+		System.out.println("[Somnia Core] Patching class "+className);
+		switch (index) {
+			case 0:
+				patchEntityRenderer(classNode, obf);
+				break;
+			case 1:
+				patchWorldServer(classNode, obf);
+				break;
+			case 2:
+				patchChunk(classNode, obf);
+				break;
+			case 3:
+				patchMinecraftServer(classNode);
+				break;
+			case 4:
+				patchEntityPlayer(classNode, obf);
+				break;
+			case 5:
+				patchBlockBed(classNode, obf);
+				break;
+		}
+
+		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		classNode.accept(cw);
+		System.out.println("[Somnia Core] Successfully patched class "+className);
+		return cw.toByteArray();
+	}
+
+	private void patchBlockBed(ClassNode classNode, boolean obf) {
+		String 	methodOnBlockActivated = obf ? "a" : "onBlockActivated",
+				descOnBlockActivated = obf ? "(Lamu;Let;Lawt;Laed;Lub;Lfa;FFF)Z" : "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/EnumHand;Lnet/minecraft/util/EnumFacing;FFF)Z",
+				classItemStack = obf ? "aip" : "net/minecraft/item/ItemStack";
 
 		for (MethodNode m : classNode.methods) {
 			if (m.name.equals(methodOnBlockActivated) && m.desc.equals(descOnBlockActivated)) { //TODO: Move to EntityPlayer#trySleep
 				//Add wake time calculation
 				InsnList insnList = new InsnList();
-				insnList.add(new FrameNode(Opcodes.F_APPEND, 1, new Object[]{classItemStack}, 0, null)); //TODO: Do I need this?
 				insnList.add(new VarInsnNode(ALOAD, 1));
 				insnList.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/world/World;)V", false));
 				m.instructions.insert(m.instructions.get(6), insnList);
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched BlockBed");
-		return cw.toByteArray();
 	}
 
-	private byte[] patchEntityPlayer(byte[] bytes, boolean obf) {
+	private void patchEntityPlayer(ClassNode classNode, boolean obf) {
 		String 	methodSleep = obf ? "a" : "trySleep",
 				methodGetWorldTime = obf ? "S" : "getWorldTime",
 				methodSendStatusMessage = obf ? "a" : "sendStatusMessage",
@@ -82,10 +93,6 @@ public class SClassTransformer implements IClassTransformer
 				descSendStatusMessage = obf ? "(Lhh;Z)V" : "(Lnet/minecraft/util/text/ITextComponent;Z)V",
 				fieldWorld = obf ? "l" : "world",
 				fieldOtherProblem = obf ? "e" : "OTHER_PROBLEM";
-
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
 
 		Iterator<MethodNode> methods = classNode.methods.iterator();
 		AbstractInsnNode ain;
@@ -179,20 +186,12 @@ public class SClassTransformer implements IClassTransformer
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched EntityPlayer");
-		return cw.toByteArray();
 	}
 
-	private byte[] patchEntityRenderer(byte[] bytes, boolean obf)
+	private void patchEntityRenderer(ClassNode classNode, boolean obf)
 	{
 		String methodName = obf ? "a" : "updateCameraAndRender";
 		String methodName2 = obf ? "b" : "renderWorld";
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
 
 		boolean f = true;
 
@@ -221,22 +220,13 @@ public class SClassTransformer implements IClassTransformer
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched EntityRenderer");
-		return cw.toByteArray();
 	}
 
 
-	private byte[] patchWorldServer(byte[] bytes, boolean obf)
+	private void patchWorldServer(ClassNode classNode, boolean obf)
 	{
 		String 	methodTick = obf ? "d" : "tick",
 				methodGetGameRule = obf ? "b" : "getBoolean";
-
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
 
 		Iterator<MethodNode> methods = classNode.methods.iterator();
 		AbstractInsnNode ain;
@@ -275,21 +265,12 @@ public class SClassTransformer implements IClassTransformer
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched WorldServer");
-		return cw.toByteArray();
 	}
 
-	private byte[] patchChunk(byte[] bytes, boolean obf)
+	private void patchChunk(ClassNode classNode, boolean obf)
 	{
 		String methodName = obf ? "b" : "onTick";
 		String methodName2 = obf ? "o" : "checkLight";
-
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
 
 		Iterator<MethodNode> methods = classNode.methods.iterator();
 		AbstractInsnNode ain;
@@ -317,19 +298,10 @@ public class SClassTransformer implements IClassTransformer
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched Chunk");
-		return cw.toByteArray();
 	}
 
-	private byte[] patchMinecraftServer(byte[] bytes)
+	private void patchMinecraftServer(ClassNode classNode)
 	{
-		ClassNode classNode = new ClassNode();
-		ClassReader classReader = new ClassReader(bytes);
-		classReader.accept(classNode, 0);
-
 		Iterator<MethodNode> methods = classNode.methods.iterator();
 		AbstractInsnNode ain;
 		while(methods.hasNext())
@@ -356,10 +328,5 @@ public class SClassTransformer implements IClassTransformer
 				break;
 			}
 		}
-
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		classNode.accept(cw);
-		System.out.println("[Somnia Core] Successfully patched MinecraftServer");
-		return cw.toByteArray();
 	}
 }
