@@ -166,14 +166,13 @@ public class ClientTickHandler
 	@SubscribeEvent
 	public void onRenderTick(TickEvent.RenderTickEvent event)
 	{
-		if (mc.player != null && mc.player.capabilities.isCreativeMode) return;
-		else if ((mc.currentScreen != null && !(mc.currentScreen instanceof GuiIngameMenu))) {
+		if ((mc.currentScreen != null && !(mc.currentScreen instanceof GuiIngameMenu))) {
 			if (mc.player == null || !mc.player.isPlayerSleeping()) return;
 		}
 		
 		FontRenderer fontRenderer = mc.fontRenderer;
 		ScaledResolution scaledResolution = new ScaledResolution(mc);
-		if (event.phase == Phase.END) {
+		if (event.phase == Phase.END && !mc.player.capabilities.isCreativeMode) {
 			String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
 			String param = mc.player.isPlayerSleeping() ? "br" : SomniaConfig.FATIGUE.displayFatigue.toLowerCase();

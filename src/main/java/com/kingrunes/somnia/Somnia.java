@@ -195,10 +195,10 @@ public class Somnia
 
 	@SuppressWarnings("unused")
 	public static boolean checkFatigue(EntityPlayer player) {
-		boolean ignmonst = SomniaConfig.OPTIONS.ignoreMonsters;
+		boolean ignoreMonsters = SomniaConfig.OPTIONS.ignoreMonsters;
 		boolean armor = SomniaConfig.OPTIONS.sleepWithArmor;
 
 		IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		return fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
+		return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
 	}
 }
