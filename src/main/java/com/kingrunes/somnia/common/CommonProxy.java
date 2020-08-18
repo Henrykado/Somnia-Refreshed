@@ -40,8 +40,11 @@ public class CommonProxy
 		
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
-		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 		CapabilityFatigue.register();
+	}
+
+	public static boolean bedInRange(BlockPos bed, EntityPlayer player) {
+		return Math.abs(player.posX - (double)bed.getX()) < 3.0D && Math.abs(player.posY - (double)bed.getY()) < 2.0D && Math.abs(player.posZ - (double)bed.getZ()) < 3.0D;
 	}
 
 	@SubscribeEvent
@@ -55,7 +58,7 @@ public class CommonProxy
 
 		if (!(state.getBlock() instanceof BlockBed)) return;
 
-		if (Math.abs(player.posX - (double)pos.getX()) < 3.0D && Math.abs(player.posY - (double)pos.getY()) < 2.0D && Math.abs(player.posZ - (double)pos.getZ()) < 3.0D)
+		if (bedInRange(pos, player))
 		{
 			ItemStack currentItem = player.inventory.getCurrentItem();
 			ResourceLocation registryName = currentItem.getItem().getRegistryName();

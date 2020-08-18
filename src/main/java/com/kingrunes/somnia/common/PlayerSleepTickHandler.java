@@ -1,6 +1,5 @@
 package com.kingrunes.somnia.common;
 
-import com.kingrunes.somnia.common.util.ClassUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -41,14 +40,14 @@ public class PlayerSleepTickHandler
 			}
 
 			state.sleepOverride = true;
-			ClassUtils.setSleeping(player, false);
+			player.sleeping = false;
 			
 			if (player.world.isRemote && SomniaConfig.OPTIONS.fading)
 			{
 				int sleepTimer = player.getSleepTimer()+1;
 				if (sleepTimer >= 99)
 					sleepTimer = 98;
-				ClassUtils.setSleepTimer(player, sleepTimer);
+				player.sleepTimer = sleepTimer;
 			}
 		}
 	}
@@ -57,7 +56,7 @@ public class PlayerSleepTickHandler
 	{
 		if (state.sleepOverride)
 		{
-			ClassUtils.setSleeping(player, true);
+			player.sleeping = true;
 			state.sleepOverride = false;
 		}
 	}

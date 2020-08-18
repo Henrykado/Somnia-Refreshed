@@ -28,6 +28,7 @@ public class CompatModule {
     }
 
     public static boolean isBedCart(Entity entity) {
+        if (entity == null) return false;
         ResourceLocation entityName = EntityList.getKey(entity);
         return entityName != null && entityName.toString().equals("railcraft:cart_bed");
     }
