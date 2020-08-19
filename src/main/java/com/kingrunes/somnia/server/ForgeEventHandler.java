@@ -154,7 +154,7 @@ public class ForgeEventHandler
 					return;
 				}
 
-				if (!SomniaConfig.OPTIONS.sleepWithArmor && Somnia.doesPlayHaveAnyArmor(player)) {
+				if (!SomniaConfig.OPTIONS.sleepWithArmor && !player.capabilities.isCreativeMode && Somnia.doesPlayHaveAnyArmor(player)) {
 					player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
 					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
 					return;
@@ -162,7 +162,7 @@ public class ForgeEventHandler
 				//TODO: Ignore players in creative
 				List<EntityMob> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - 8.0D, (double)pos.getY() - 5.0D, (double)pos.getZ() - 8.0D, (double)pos.getX() + 8.0D, (double)pos.getY() + 5.0D, (double)pos.getZ() + 8.0D), m -> m != null && m.isPreventingPlayerRest(player));
 
-				if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters)
+				if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters && !player.capabilities.isCreativeMode)
 				{
 					event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
 					return;

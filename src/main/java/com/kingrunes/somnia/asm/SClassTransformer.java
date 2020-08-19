@@ -66,13 +66,16 @@ public class SClassTransformer implements IClassTransformer
 				classTextComponentTranslation = obf ? "hp" : "net/minecraft/util/text/TextComponentTranslation",
 				classSleepResult = obf ? "aed$a" : "net/minecraft/entity/player/EntityPlayer$SleepResult",
 				classBlockPos = obf ? "et" : "net/minecraft/util/math/BlockPos",
-				descSleep = obf ? "(Let;)Laed$a;" : "(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/entity/player/EntityPlayer$SleepResult;",
-				descWorld = obf ? "Lamu;" : "Lnet/minecraft/world/World;",
-				descSleepResult = obf ? "Laed$a;" : "Lnet/minecraft/entity/player/EntityPlayer$SleepResult;",
+				classPlayerCapabilities = obf ? "aeb" : "net/minecraft/entity/player/PlayerCapabilities",
+				descSleep = String.format("(L%s;)L%s;", classBlockPos, classSleepResult),
+				descWorld = String.format("L%s;", classWorld),
+				descSleepResult = String.format("L%s;", classSleepResult),
 				descSendStatusMessage = obf ? "(Lhh;Z)V" : "(Lnet/minecraft/util/text/ITextComponent;Z)V",
+				descPlayerCapabilities = String.format("L%s;", classPlayerCapabilities),
 				fieldWorld = obf ? "l" : "world",
-				fieldOtherProblem = obf ? "e" : "OTHER_PROBLEM";
-
+				fieldOtherProblem = obf ? "e" : "OTHER_PROBLEM",
+				fieldCapabilities = obf ? "bO" : "capabilities",
+				fieldIsCreativeMode = obf ? "d" : "isCreativeMode";
 		Iterator<MethodNode> methods = classNode.methods.iterator();
 		AbstractInsnNode ain;
 
@@ -128,6 +131,10 @@ public class SClassTransformer implements IClassTransformer
 						insnList3.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "ignoreMonsters", "Z"));
 						JumpInsnNode ainsnode = (JumpInsnNode) m.instructions.get(204);
 						insnList3.add(new JumpInsnNode(IFNE, ainsnode.label));
+						insnList3.add(new VarInsnNode(ALOAD, 0));
+						insnList3.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldCapabilities, descPlayerCapabilities));
+						insnList3.add(new FieldInsnNode(GETFIELD, classPlayerCapabilities, fieldIsCreativeMode, "Z"));
+						insnList3.add(new JumpInsnNode(IFNE, ainsnode.label));
 						m.instructions.insert(ainsnode, insnList3);
 
 						InsnList insnList4 = new InsnList(); //Armor check
@@ -139,6 +146,10 @@ public class SClassTransformer implements IClassTransformer
 						insnList4.add(new FrameNode(Opcodes.F_APPEND, 2, new Object[]{classBlockPos, classEntityPlayer}, 0, null));
 						insnList4.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/SomniaConfig", "OPTIONS", "Lcom/kingrunes/somnia/common/SomniaConfig$Options;"));
 						insnList4.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "sleepWithArmor", "Z"));
+						insnList4.add(new JumpInsnNode(IFNE, label20));
+						insnList4.add(new VarInsnNode(ALOAD, 0));
+						insnList4.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldCapabilities, descPlayerCapabilities));
+						insnList4.add(new FieldInsnNode(GETFIELD, classPlayerCapabilities, fieldIsCreativeMode, "Z"));
 						insnList4.add(new JumpInsnNode(IFNE, label20));
 						insnList4.add(new VarInsnNode(ALOAD, 0));
 						insnList4.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "doesPlayHaveAnyArmor", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
@@ -164,7 +175,7 @@ public class SClassTransformer implements IClassTransformer
 						InsnList insnList5 = new InsnList();
 						insnList5.add(new VarInsnNode(ALOAD, 0));
 						insnList5.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/entity/player/EntityPlayer;)V", false));
-						m.instructions.insert(m.instructions.get(375), insnList5);
+						m.instructions.insert(m.instructions.get(383), insnList5);
 					}
 				}
 				break;
