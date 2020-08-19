@@ -159,7 +159,6 @@ public class ForgeEventHandler
 					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
 					return;
 				}
-				//TODO: Ignore players in creative
 				List<EntityMob> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - 8.0D, (double)pos.getY() - 5.0D, (double)pos.getZ() - 8.0D, (double)pos.getX() + 8.0D, (double)pos.getY() + 5.0D, (double)pos.getZ() + 8.0D), m -> m != null && m.isPreventingPlayerRest(player));
 
 				if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters && !player.capabilities.isCreativeMode)
