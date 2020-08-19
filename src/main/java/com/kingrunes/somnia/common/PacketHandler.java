@@ -4,6 +4,7 @@ import com.kingrunes.somnia.Somnia;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
@@ -47,7 +48,7 @@ public class PacketHandler
 			switch (id)
 			{
 			case 0x00:
-				handleGUIOpenPacket(in);
+				handleGUIOpenPacket();
 				break;
 			case 0x01:
 				handleWakePacket(player, in);
@@ -58,6 +59,9 @@ public class PacketHandler
 			case 0x03:
 				handleRightClickBlockPacket(player, in);
 				break;
+			case 0x04:
+				handleRideEntityPacket(player, in);
+				break;
 			}
 		}
 		catch (IOException e)
@@ -67,8 +71,8 @@ public class PacketHandler
 	}
 
 	// CLIENT
-	private void handleGUIOpenPacket(DataInputStream in) throws IOException {
-		Somnia.proxy.handleGUIOpenPacket(in);
+	private void handleGUIOpenPacket() {
+		Somnia.proxy.handleGUIOpenPacket();
 	}
 	
 	private void handlePropUpdatePacket(DataInputStream in) throws IOException 
@@ -90,19 +94,22 @@ public class PacketHandler
 		state.getBlock().onBlockActivated(player.world, pos, state, player, EnumHand.MAIN_HAND, facing, in.readFloat(), in.readFloat(), in.readFloat());
 	}
 
-	public static FMLProxyPacket buildGuiSelectWakeTimePacket() {
-		return doBuildGUIOpenPacket((byte) 0x00);
+	private void handleRideEntityPacket(EntityPlayerMP player, DataInputStream in) throws IOException {
+		Entity entity = player.world.getEntityByID(in.readInt());
+		if (entity == null) return;
+
+		player.startRiding(entity, true);
 	}
 
-	/**
-	 * @param data 0 for GuiSomnia, 1 for GuiSelectWakeTime
-	 */
-	private static FMLProxyPacket doBuildGUIOpenPacket(byte data)
+	public static FMLProxyPacket buildGUIOpenPacket() {
+		return doBuildGUIOpenPacket();
+	}
+
+	private static FMLProxyPacket doBuildGUIOpenPacket()
 	{
 		PacketBuffer buffer = unpooled();
 		
     	buffer.writeByte(0x00);
-    	buffer.writeByte(data);
     	return new FMLProxyPacket(buffer, Somnia.MOD_ID);
 	}
 	
@@ -147,6 +154,15 @@ public class PacketHandler
 		buffer.writeFloat(x);
 		buffer.writeFloat(y);
 		buffer.writeFloat(z);
+		return new FMLProxyPacket(buffer, Somnia.MOD_ID);
+	}
+
+	public static FMLProxyPacket buildRideEntityPacket(Entity entity) {
+		PacketBuffer buffer = unpooled();
+
+		buffer.writeByte(0x04);
+		buffer.writeInt(entity.getEntityId());
+
 		return new FMLProxyPacket(buffer, Somnia.MOD_ID);
 	}
 	

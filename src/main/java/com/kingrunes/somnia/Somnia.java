@@ -32,7 +32,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, version="-au")
+@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, version="-au", dependencies = "after:railcraft")
 public class Somnia
 {
 	public static final String MOD_ID = "somnia";
@@ -188,6 +188,7 @@ public class Somnia
 
 	@SuppressWarnings("unused")
 	public static void updateWakeTime(EntityPlayer player) {
+		if (clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
 		long totalWorldTime = player.world.getTotalWorldTime();
 		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
 	}

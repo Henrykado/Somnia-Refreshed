@@ -11,7 +11,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = VERSION_MAJOR+"."+VERSION_MINOR+(VERSION_REVISION > 0 ? "."+VERSION_REVISION : "")
+version = VERSION_MAJOR+"."+VERSION_MINOR+(Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "")
 group = "com.kingrunes.somnia" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "somnia"
 
@@ -29,8 +29,13 @@ minecraft {
     mappings = "snapshot_20171003"
 }
 
+repositories {
+    maven {
+        url = "https://www.cursemaven.com"
+    }
+}
 dependencies {
-
+    compile "curse.maven:railcraft:2687757"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -46,6 +51,7 @@ jar {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
         attributes 'FMLCorePlugin': coremodPath, 'FMLCorePluginContainsFMLMod': 'true'
+        attributes 'FMLAT': 'somnia_at.cfg'
     }
 }
 

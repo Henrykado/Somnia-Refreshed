@@ -4,9 +4,11 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.api.capability.IFatigue;
-import com.kingrunes.somnia.common.*;
-import net.minecraft.block.BlockHorizontal;
-import net.minecraft.block.state.IBlockState;
+import com.kingrunes.somnia.common.CommonProxy;
+import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -101,9 +102,13 @@ public class ForgeEventHandler
 
 	@SubscribeEvent
 	public void onWakeUp(PlayerWakeUpEvent event) {
-		IFatigue props = event.getEntityPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		EntityPlayer player = event.getEntityPlayer();
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
 			props.maxFatigueCounter();
+		}
+		if (player.world.isRemote) {
+			Somnia.clientAutoWakeTime = -1;
 		}
 	}
 
@@ -113,51 +118,54 @@ public class ForgeEventHandler
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onSleep(PlayerSleepInBedEvent event) {
 		EntityPlayer player = event.getEntityPlayer();
-
-		if (CompatModule.isBedCart(player.getRidingEntity())) {
+		Entity riding = player.getRidingEntity();
+		if (riding != null && riding.getClass() == RailcraftPlugin.BED_CART_CLASS) {
 			final BlockPos pos = event.getPos();
-			final IBlockState state = player.world.isBlockLoaded(pos) ? player.world.getBlockState(pos) : null;
-			final boolean isBed = state != null && state.getBlock().isBed(state, player.world, pos, player);
-			final EnumFacing enumfacing = isBed && state.getBlock() instanceof BlockHorizontal ? state.getValue(BlockHorizontal.FACING) : null;
-
 
 			if (!player.world.isRemote)
 			{
 				if (player.isPlayerSleeping() || !player.isEntityAlive())
 				{
 					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+					return;
 				}
 
 				if (!player.world.provider.isSurfaceWorld())
 				{
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_HERE);
+					return;
 				}
 
 				if (!CommonProxy.enterSleepPeriod.isTimeWithin(24000L))
 				{
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
+					return;
 				}
 
-				if (!CommonProxy.bedInRange(pos, player))
+				if (!player.bedInRange(pos, null)) //passing null is fine here
 				{
 					event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
+					return;
 				}
 
 				if (!Somnia.checkFatigue(player)) {
 					player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
 					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+					return;
 				}
 
 				if (!SomniaConfig.OPTIONS.sleepWithArmor && Somnia.doesPlayHaveAnyArmor(player)) {
 					player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
 					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+					return;
 				}
-
+				//TODO: Ignore players in creative
 				List<EntityMob> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - 8.0D, (double)pos.getY() - 5.0D, (double)pos.getZ() - 8.0D, (double)pos.getX() + 8.0D, (double)pos.getY() + 5.0D, (double)pos.getZ() + 8.0D), m -> m != null && m.isPreventingPlayerRest(player));
 
-				if (!list.isEmpty())
+				if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters)
 				{
 					event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
+					return;
 				}
 			}
 

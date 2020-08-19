@@ -3,15 +3,16 @@ package com.kingrunes.somnia.common;
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
+import com.kingrunes.somnia.common.compat.CompatModule;
+import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
-import net.minecraft.block.BlockBed;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -43,33 +44,29 @@ public class CommonProxy
 		CapabilityFatigue.register();
 	}
 
-	public static boolean bedInRange(BlockPos bed, EntityPlayer player) {
-		return Math.abs(player.posX - (double)bed.getX()) < 3.0D && Math.abs(player.posY - (double)bed.getY()) < 2.0D && Math.abs(player.posZ - (double)bed.getZ()) < 3.0D;
-	}
-
 	@SubscribeEvent
-	public void interactHook(PlayerInteractEvent.RightClickBlock event) {
+	public void interactHook(PlayerInteractEvent event) {
 		World world = event.getWorld();
 
 		BlockPos pos = event.getPos();
 
 		EntityPlayer player = event.getEntityPlayer();
-		IBlockState state = world.getBlockState(pos);
 
-		if (!(state.getBlock() instanceof BlockBed)) return;
+		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && ((PlayerInteractEvent.EntityInteractSpecific)event).getTarget().getClass() == RailcraftPlugin.BED_CART_CLASS)) {
+			if (player.bedInRange(pos, null)) //the facing can be null
+			{
+				ItemStack currentItem = player.inventory.getCurrentItem();
+				ResourceLocation registryName = currentItem.getItem().getRegistryName();
+				if (currentItem != ItemStack.EMPTY && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
+					if (world.isRemote) {
+						Minecraft minecraft = Minecraft.getMinecraft();
+						if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
+					}
+					else Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
 
-		if (bedInRange(pos, player))
-		{
-			ItemStack currentItem = player.inventory.getCurrentItem();
-			ResourceLocation registryName = currentItem.getItem().getRegistryName();
-			if (currentItem != ItemStack.EMPTY && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
-				if (world.isRemote) {
-					Minecraft minecraft = Minecraft.getMinecraft();
-					if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
+					event.setCancellationResult(EnumActionResult.SUCCESS);
+					event.setCanceled(true);
 				}
-				else Somnia.eventChannel.sendTo(PacketHandler.buildGuiSelectWakeTimePacket(), (EntityPlayerMP) player);
-
-				event.setCanceled(true);
 			}
 		}
 	}
@@ -123,7 +120,7 @@ public class CommonProxy
 	 * The following methods are implemented client-side only
 	 */
 	
-	public void handleGUIOpenPacket(DataInputStream in) throws IOException
+	public void handleGUIOpenPacket()
 	{}
 
 	public void handlePropUpdatePacket(DataInputStream in) throws IOException

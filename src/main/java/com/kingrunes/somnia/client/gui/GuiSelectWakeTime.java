@@ -2,8 +2,10 @@ package com.kingrunes.somnia.client.gui;
 
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 
 public class GuiSelectWakeTime extends GuiScreen
@@ -169,8 +171,15 @@ public class GuiSelectWakeTime extends GuiScreen
 		 * Nice little hack to simulate a right click on the bed, don't try this at home kids
 		 */
 		RayTraceResult mouseOver = mc.objectMouseOver;
+		BlockPos pos = mouseOver.getBlockPos();
 
-		Somnia.eventChannel.sendToServer(PacketHandler.buildRightClickBlockPacket(mouseOver.getBlockPos(), mouseOver.sideHit, (float) mouseOver.hitVec.x, (float) mouseOver.hitVec.y, (float) mouseOver.hitVec.z));
+		if (pos != null) { //pos is nullable!!!
+			Somnia.eventChannel.sendToServer(PacketHandler.buildRightClickBlockPacket(mouseOver.getBlockPos(), mouseOver.sideHit, (float) mouseOver.hitVec.x, (float) mouseOver.hitVec.y, (float) mouseOver.hitVec.z));
+		}
+		else if (mouseOver.entityHit != null && mouseOver.entityHit.getClass() == RailcraftPlugin.BED_CART_CLASS) {
+			Somnia.eventChannel.sendToServer(PacketHandler.buildRideEntityPacket(mouseOver.entityHit));
+			RailcraftPlugin.sleepInBedCart();
+		}
 
 		mc.displayGuiScreen(null);
 	}
