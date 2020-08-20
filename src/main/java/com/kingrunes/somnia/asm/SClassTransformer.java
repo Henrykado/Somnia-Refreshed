@@ -188,10 +188,8 @@ public class SClassTransformer implements IClassTransformer
 		String methodName = obf ? "a" : "updateCameraAndRender";
 		String methodName2 = obf ? "b" : "renderWorld";
 
-		boolean f = true;
-
 		for (MethodNode m : classNode.methods) {
-			if (m.name.equals(methodName) && m.desc.equals("(F)V")) {
+			if (m.name.equals(methodName) && m.desc.equals("(FJ)V")) {
 				AbstractInsnNode ain;
 				MethodInsnNode min;
 				VarInsnNode vin;
@@ -205,10 +203,8 @@ public class SClassTransformer implements IClassTransformer
 							min.name = "renderWorld";
 							min.owner = "com/kingrunes/somnia/Somnia";
 
-							vin = (VarInsnNode) m.instructions.get(m.instructions.indexOf(min) - (f ? 9 : 3));
+							vin = (VarInsnNode) m.instructions.get(m.instructions.indexOf(min) - 5);
 							m.instructions.remove(vin);
-
-							f = false;
 						}
 					}
 				}
@@ -272,7 +268,7 @@ public class SClassTransformer implements IClassTransformer
 		while(methods.hasNext())
 		{
 			MethodNode m = methods.next();
-			if (m.name.equals(methodName))
+			if (m.name.equals(methodName) && m.desc.equals("(Z)V"))
 			{
 				Iterator<AbstractInsnNode> iter = m.instructions.iterator();
 				while (iter.hasNext())
