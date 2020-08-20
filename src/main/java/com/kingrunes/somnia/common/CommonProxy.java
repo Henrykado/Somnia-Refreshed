@@ -127,5 +127,7 @@ public class CommonProxy
 	{}
 
 	public void handleWakePacket(EntityPlayerMP player)
-	{}
+	{
+		player.wakeUpPlayer(true, true, true);
+	}
 }
