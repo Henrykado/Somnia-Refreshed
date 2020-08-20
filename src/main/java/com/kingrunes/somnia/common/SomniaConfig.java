@@ -90,6 +90,9 @@ public class SomniaConfig {
     }
 
     public static class Logic {
+        @Config.RangeDouble(min = 1, max = 50)
+        @Config.Comment("If the time difference (mc) between multiplied ticking is greater than this, the simulation multiplier is lowered. Otherwise, it's increased. Lowering this number might slow down simulation and improve performance. Don't mess around with it if you don't know what you're doing.")
+        public double delta = 50;
         @Config.Comment("Minimum tick speed multiplier, activated during sleep")
         public double baseMultiplier = 1;
         @Config.Comment("Maximum tick speed multiplier, activated during sleep")

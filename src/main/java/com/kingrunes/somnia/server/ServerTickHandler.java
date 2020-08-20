@@ -134,7 +134,7 @@ public class ServerTickHandler
 		if (server == null) return;
 		server.getPlayerList().sendPacketToAllPlayersInDimension(new SPacketTimeUpdate(worldServer.getTotalWorldTime(), worldServer.getWorldTime(), worldServer.getGameRules().getBoolean("doDaylightCycle")), worldServer.provider.getDimension());
 		
-		if (delta > (50.0d/activeTickHandlers))
+		if (delta > (SomniaConfig.LOGIC.delta/activeTickHandlers))
 			multiplier -= .1d;
 		else
 			multiplier += .1d;
