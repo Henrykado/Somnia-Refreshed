@@ -62,5 +62,6 @@ public class ClientProxy extends CommonProxy
 	public void handleWakePacket(EntityPlayerMP player)
 	{
 		Minecraft.getMinecraft().displayGuiScreen(null);
+		super.handleWakePacket(player);
 	}
 }
