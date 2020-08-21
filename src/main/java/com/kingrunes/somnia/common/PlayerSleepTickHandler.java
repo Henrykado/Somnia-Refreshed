@@ -1,8 +1,11 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.common.compat.CompatModule;
+import com.kingrunes.somnia.common.util.InvUtil;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
@@ -29,12 +32,19 @@ public class PlayerSleepTickHandler
 		else
 			tickEnd(state, event.player);
 	}
-	
+
+	private static final ResourceLocation CHARM_SLEEP = new ResourceLocation("darkutils", "charm_sleep");
 	public void tickStart(State state, EntityPlayer player)
 	{
 		if (player.isPlayerSleeping())
 		{
 			BlockPos pos = player.bedLocation;
+
+			//Reset fatigue in case you pick the charm up while sleeping. Doesn't trigger otherwise, because Somnia keeps the sleep timer below 100
+			if (player.sleepTimer > 99 && Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CHARM_SLEEP)) {
+				player.sleepTimer = 98;
+			}
+
 			if (!CompatModule.isBed(player, pos)) {
 				state.sleepOverride = false;
 				return;

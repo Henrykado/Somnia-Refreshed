@@ -32,7 +32,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, version="-au", dependencies = "after:railcraft")
+@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, version="-au", dependencies = "after:railcraft; after:baubles")
 public class Somnia
 {
 	public static final String MOD_ID = "somnia";

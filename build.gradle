@@ -33,9 +33,14 @@ repositories {
     maven {
         url = "https://www.cursemaven.com"
     }
+    maven {
+
+        url 'https://maven.mcmoddev.com'
+    }
 }
 dependencies {
     compile "curse.maven:railcraft:2687757"
+    compile "com.azanor:Baubles:${VERSION_BAUBLES}"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

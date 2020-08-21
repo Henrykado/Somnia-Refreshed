@@ -10,15 +10,12 @@ import org.objectweb.asm.tree.*;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.objectweb.asm.Opcodes.*;
-
 public class SClassTransformer implements IClassTransformer
 {
 	private static final List<String> transformedClasses = Lists.newArrayList("net.minecraft.client.renderer.EntityRenderer",
 			"net.minecraft.world.WorldServer",
 			"net.minecraft.world.chunk.Chunk",
-			"net.minecraft.server.MinecraftServer",
-			"net.minecraft.entity.player.EntityPlayer");
+			"net.minecraft.server.MinecraftServer");
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes)
 	{
@@ -46,141 +43,12 @@ public class SClassTransformer implements IClassTransformer
 			case 3:
 				patchMinecraftServer(classNode);
 				break;
-			case 4:
-				patchEntityPlayer(classNode, obf);
-				break;
 		}
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(cw);
 		System.out.println("[Somnia Core] Successfully patched class "+className);
 		return cw.toByteArray();
-	}
-
-	private void patchEntityPlayer(ClassNode classNode, boolean obf) {
-		String 	methodSleep = obf ? "a" : "trySleep",
-				methodGetWorldTime = obf ? "S" : "getWorldTime",
-				methodSendStatusMessage = obf ? "a" : "sendStatusMessage",
-				classEntityPlayer = obf ? "aed" : "net/minecraft/entity/player/EntityPlayer",
-				classWorld = obf ? "amu" : "net/minecraft/world/World",
-				classTextComponentTranslation = obf ? "hp" : "net/minecraft/util/text/TextComponentTranslation",
-				classSleepResult = obf ? "aed$a" : "net/minecraft/entity/player/EntityPlayer$SleepResult",
-				classBlockPos = obf ? "et" : "net/minecraft/util/math/BlockPos",
-				classPlayerCapabilities = obf ? "aeb" : "net/minecraft/entity/player/PlayerCapabilities",
-				descSleep = String.format("(L%s;)L%s;", classBlockPos, classSleepResult),
-				descWorld = String.format("L%s;", classWorld),
-				descSleepResult = String.format("L%s;", classSleepResult),
-				descSendStatusMessage = obf ? "(Lhh;Z)V" : "(Lnet/minecraft/util/text/ITextComponent;Z)V",
-				descPlayerCapabilities = String.format("L%s;", classPlayerCapabilities),
-				fieldWorld = obf ? "l" : "world",
-				fieldOtherProblem = obf ? "e" : "OTHER_PROBLEM",
-				fieldCapabilities = obf ? "bO" : "capabilities",
-				fieldIsCreativeMode = obf ? "d" : "isCreativeMode";
-		Iterator<MethodNode> methods = classNode.methods.iterator();
-		AbstractInsnNode ain;
-
-		while(methods.hasNext())
-		{
-			MethodNode m = methods.next();
-			if (m.name.equals(methodSleep) && m.desc.equals(descSleep))
-			{
-				Iterator<AbstractInsnNode> iter = m.instructions.iterator();
-				while (iter.hasNext())
-				{
-					ain = iter.next();
-					if (ain instanceof JumpInsnNode && m.instructions.indexOf(ain) == 108) {
-						LabelNode label18 = ((JumpInsnNode) ain).label;
-						for (byte i = 0; i < 4; i++) m.instructions.remove(m.instructions.get(105)); //Remove sleep time check
-
-						InsnList insnList = new InsnList(); //Change sleep time check
-						insnList.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/CommonProxy", "enterSleepPeriod", "Lcom/kingrunes/somnia/common/util/TimePeriod;"));
-						insnList.add(new VarInsnNode(ALOAD, 0));
-						insnList.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldWorld, descWorld));
-						insnList.add(new MethodInsnNode(INVOKEVIRTUAL, classWorld, methodGetWorldTime, "()J", false));
-						insnList.add(new LdcInsnNode(24000L));
-						insnList.add(new InsnNode(LREM));
-						insnList.add(new MethodInsnNode(INVOKEVIRTUAL, "com/kingrunes/somnia/common/util/TimePeriod", "isTimeWithin", "(J)Z", false));
-						LabelNode label175 = new LabelNode();
-						insnList.add(new JumpInsnNode(IFNE, label175));
-						m.instructions.insert(m.instructions.get(104), insnList);
-
-						InsnList insnList2 = new InsnList(); //Fatigue check
-						insnList2.add(((JumpInsnNode)m.instructions.get(112)).label);
-						insnList2.add(new VarInsnNode(ALOAD, 0));
-						insnList2.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "checkFatigue", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
-						insnList2.add(new JumpInsnNode(IFNE, label18));
-						LabelNode label176 = new LabelNode();
-						insnList2.add(label176);
-						insnList2.add(new VarInsnNode(ALOAD, 0));
-						insnList2.add(new TypeInsnNode(NEW, classTextComponentTranslation));
-						insnList2.add(new InsnNode(DUP));
-						insnList2.add(new LdcInsnNode("somnia.status.cooldown"));
-						insnList2.add(new InsnNode(ICONST_0));
-						insnList2.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-						insnList2.add(new MethodInsnNode(INVOKESPECIAL, classTextComponentTranslation, "<init>", "(Ljava/lang/String;[Ljava/lang/Object;)V", false));
-						insnList2.add(new InsnNode(ICONST_1));
-						insnList2.add(new MethodInsnNode(INVOKEVIRTUAL, classEntityPlayer, methodSendStatusMessage, descSendStatusMessage, false));
-						LabelNode label177 = new LabelNode();
-						insnList2.add(label177);
-						insnList2.add(new FieldInsnNode(GETSTATIC, classSleepResult, fieldOtherProblem, descSleepResult));
-						insnList2.add(new InsnNode(ARETURN));
-						m.instructions.insert(m.instructions.get(116), insnList2);
-
-						InsnList insnList3 = new InsnList(); //Add an ignoremonsters check to existing if statement
-						insnList3.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/SomniaConfig", "OPTIONS", "Lcom/kingrunes/somnia/common/SomniaConfig$Options;"));
-						insnList3.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "ignoreMonsters", "Z"));
-						JumpInsnNode ainsnode = (JumpInsnNode) m.instructions.get(204);
-						insnList3.add(new JumpInsnNode(IFNE, ainsnode.label));
-						insnList3.add(new VarInsnNode(ALOAD, 0));
-						insnList3.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldCapabilities, descPlayerCapabilities));
-						insnList3.add(new FieldInsnNode(GETFIELD, classPlayerCapabilities, fieldIsCreativeMode, "Z"));
-						insnList3.add(new JumpInsnNode(IFNE, ainsnode.label));
-						m.instructions.insert(ainsnode, insnList3);
-
-						InsnList insnList4 = new InsnList(); //Armor check
-						LabelNode label20 = (LabelNode) m.instructions.get(146);
-						LabelNode label195 = new LabelNode();
-						m.instructions.insert(m.instructions.get(141), new JumpInsnNode(IFNE, label195));
-						m.instructions.remove(m.instructions.get(141));
-						insnList4.add(label195);
-						insnList4.add(new FrameNode(Opcodes.F_APPEND, 2, new Object[]{classBlockPos, classEntityPlayer}, 0, null));
-						insnList4.add(new FieldInsnNode(GETSTATIC, "com/kingrunes/somnia/common/SomniaConfig", "OPTIONS", "Lcom/kingrunes/somnia/common/SomniaConfig$Options;"));
-						insnList4.add(new FieldInsnNode(GETFIELD, "com/kingrunes/somnia/common/SomniaConfig$Options", "sleepWithArmor", "Z"));
-						insnList4.add(new JumpInsnNode(IFNE, label20));
-						insnList4.add(new VarInsnNode(ALOAD, 0));
-						insnList4.add(new FieldInsnNode(GETFIELD, classEntityPlayer, fieldCapabilities, descPlayerCapabilities));
-						insnList4.add(new FieldInsnNode(GETFIELD, classPlayerCapabilities, fieldIsCreativeMode, "Z"));
-						insnList4.add(new JumpInsnNode(IFNE, label20));
-						insnList4.add(new VarInsnNode(ALOAD, 0));
-						insnList4.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "doesPlayHaveAnyArmor", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
-						insnList4.add(new JumpInsnNode(IFEQ, label20));
-						LabelNode label148 = new LabelNode();
-						insnList4.add(label148);
-						insnList4.add(new VarInsnNode(ALOAD, 0)); //Send armor status to player
-						insnList4.add(new TypeInsnNode(NEW, classTextComponentTranslation));
-						insnList4.add(new InsnNode(DUP));
-						insnList4.add(new LdcInsnNode("somnia.status.armor"));
-						insnList4.add(new InsnNode(ICONST_0));
-						insnList4.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-						insnList4.add(new MethodInsnNode(INVOKESPECIAL, classTextComponentTranslation, "<init>", "(Ljava/lang/String;[Ljava/lang/Object;)V", false));
-						insnList4.add(new InsnNode(ICONST_1));
-						insnList4.add(new MethodInsnNode(INVOKEVIRTUAL, classEntityPlayer, methodSendStatusMessage, descSendStatusMessage, false));
-
-						LabelNode label149 = new LabelNode(); //Return
-						insnList4.add(label149);
-						insnList4.add(new FieldInsnNode(GETSTATIC, classSleepResult, fieldOtherProblem, descSleepResult));
-						insnList4.add(new InsnNode(ARETURN));
-						m.instructions.insert(m.instructions.get(145), insnList4);
-
-						InsnList insnList5 = new InsnList();
-						insnList5.add(new VarInsnNode(ALOAD, 0));
-						insnList5.add(new MethodInsnNode(INVOKESTATIC, "com/kingrunes/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/entity/player/EntityPlayer;)V", false));
-						m.instructions.insert(m.instructions.get(383), insnList5);
-					}
-				}
-				break;
-			}
-		}
 	}
 
 	private void patchEntityRenderer(ClassNode classNode, boolean obf)

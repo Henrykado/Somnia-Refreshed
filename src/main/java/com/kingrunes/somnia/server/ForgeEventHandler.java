@@ -8,7 +8,9 @@ import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
-import com.kingrunes.somnia.common.compat.RailcraftPlugin;
+import com.kingrunes.somnia.common.util.InvUtil;
+import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,14 +18,17 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -112,82 +117,113 @@ public class ForgeEventHandler
 		}
 	}
 
+	private final ResourceLocation CHARM_SLEEP =  new ResourceLocation("darkutils", "charm_sleep");
 	/**
-	 * Re-implementation of the sleep method for the Railcraft bed cart. Using {@link EntityPlayer#trySleep} would result in a stack overflow, because it triggers the same event
+	 * Re-implementation of the sleep method.
 	 */
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onSleep(PlayerSleepInBedEvent event) {
 		EntityPlayer player = event.getEntityPlayer();
-		Entity riding = player.getRidingEntity();
-		if (riding != null && riding.getClass() == RailcraftPlugin.BED_CART_CLASS) {
-			final BlockPos pos = event.getPos();
+		BlockPos pos = event.getPos();
+		final IBlockState state = player.world.isBlockLoaded(pos) ? player.world.getBlockState(pos) : null;
+		final boolean isBed = state != null && state.getBlock().isBed(state, player.world, pos, player);
+		final EnumFacing enumfacing = isBed && state.getBlock() instanceof BlockHorizontal ? state.getValue(BlockHorizontal.FACING) : null;
 
-			if (!player.world.isRemote)
+		if (!player.world.isRemote)
+		{
+			if (player.isPlayerSleeping() || !player.isEntityAlive())
 			{
-				if (player.isPlayerSleeping() || !player.isEntityAlive())
-				{
-					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-					return;
-				}
+				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+				return;
+			}
 
-				if (!player.world.provider.isSurfaceWorld())
-				{
-					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_HERE);
-					return;
-				}
+			if (!player.world.provider.isSurfaceWorld())
+			{
+				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_HERE);
+				return;
+			}
 
-				if (!CommonProxy.enterSleepPeriod.isTimeWithin(24000L))
-				{
+			if (!CommonProxy.enterSleepPeriod.isTimeWithin(24000)) {
+				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
+				return;
+			}
+
+			if (!player.bedInRange(pos, enumfacing))
+			{
+				event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
+			}
+
+			if (!Somnia.checkFatigue(player)) {
+				player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
+				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+				return;
+			}
+
+			if (!SomniaConfig.OPTIONS.sleepWithArmor && !player.capabilities.isCreativeMode && Somnia.doesPlayHaveAnyArmor(player)) {
+				player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
+				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+				return;
+			}
+
+			double d0 = 8.0D;
+			double d1 = 5.0D;
+			List<EntityMob> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - d0, (double)pos.getY() - d1, (double)pos.getZ() - d0, (double)pos.getX() + d0, (double)pos.getY() + d1, (double)pos.getZ() + d0), m -> m != null && m.isPreventingPlayerRest(player));
+
+			if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters && !player.capabilities.isCreativeMode)
+			{
+				event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
+				return;
+			}
+
+			if (Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, this.CHARM_SLEEP)) {
+				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 					return;
 				}
-
-				if (!player.bedInRange(pos, null)) //passing null is fine here
-				{
-					event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
-					return;
-				}
-
-				if (!Somnia.checkFatigue(player)) {
-					player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
-					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-					return;
-				}
-
-				if (!SomniaConfig.OPTIONS.sleepWithArmor && !player.capabilities.isCreativeMode && Somnia.doesPlayHaveAnyArmor(player)) {
-					player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
-					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-					return;
-				}
-				List<EntityMob> list = player.world.getEntitiesWithinAABB(EntityMob.class, new AxisAlignedBB((double)pos.getX() - 8.0D, (double)pos.getY() - 5.0D, (double)pos.getZ() - 8.0D, (double)pos.getX() + 8.0D, (double)pos.getY() + 5.0D, (double)pos.getZ() + 8.0D), m -> m != null && m.isPreventingPlayerRest(player));
-
-				if (!list.isEmpty() && !SomniaConfig.OPTIONS.ignoreMonsters && !player.capabilities.isCreativeMode)
-				{
-					event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
-					return;
+				IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+				if (props != null) {
+					long worldTime = player.world.getTotalWorldTime();
+					long wakeTime = Somnia.calculateWakeTime(worldTime, 0);
+					double fatigueToReplenish = SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
+					props.setFatigue(props.getFatigue() - fatigueToReplenish);
 				}
 			}
-
-			player.spawnShoulderEntities();
-			player.setSize(0.2F, 0.2F);
-
-			player.sleeping = true;
-			player.sleepTimer = 0;
-
-			player.bedLocation = pos;
-			player.motionX = 0.0D;
-			player.motionY = 0.0D;
-			player.motionZ = 0.0D;
-
-			if (!player.world.isRemote)
-			{
-				player.world.updateAllPlayersSleepingFlag();
-			}
-			player.setPosition(pos.getX(), pos.getY(), pos.getZ());
-			Somnia.updateWakeTime(player);
-
-			event.setResult(EntityPlayer.SleepResult.OK);
 		}
+
+		if (player.isRiding())
+		{
+			player.dismountRidingEntity();
+		}
+
+		player.spawnShoulderEntities();
+		player.setSize(0.2F, 0.2F);
+
+		if (enumfacing != null) {
+			float f1 = 0.5F + (float)enumfacing.getFrontOffsetX() * 0.4F;
+			float f = 0.5F + (float)enumfacing.getFrontOffsetZ() * 0.4F;
+			player.setRenderOffsetForSleep(enumfacing);
+			player.setPosition(((float)pos.getX() + f1), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + f));
+		}
+		else
+		{
+			player.setPosition(((float)pos.getX() + 0.5F), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + 0.5F));
+		}
+
+		player.sleeping = true;
+		player.sleepTimer = 0;
+		player.bedLocation = pos;
+		player.motionX = 0.0D;
+		player.motionY = 0.0D;
+		player.motionZ = 0.0D;
+
+		if (!player.world.isRemote)
+		{
+			player.world.updateAllPlayersSleepingFlag();
+		}
+
+		Somnia.updateWakeTime(player);
+
+		event.setResult(EntityPlayer.SleepResult.OK);
 	}
 
 	@SubscribeEvent
