@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+*Before reporting a bug, please make sure you're using the newest version of Somnia*
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
