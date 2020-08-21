@@ -264,9 +264,10 @@ public class ClientTickHandler
 
 			// ETA
 			double total = 0.0d;
-			for (double value : speedValues)
+			Double[] values = speedValues.toArray(new Double[0]); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
+			for (double value : values)
 				total += value;
-			double avg = total / speedValues.size();
+			double avg = total / values.length;
 			int etaTotalSeconds = (int)((diff-rel) / (avg*20)); // remaining ticks / (average multiplier * standard tick rate)
 
 			int etaSeconds = etaTotalSeconds % 60,
