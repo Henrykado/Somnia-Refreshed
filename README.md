@@ -19,7 +19,7 @@ All information is available on Somnia's ![wiki](https://github.com/Su5eD/Somnia
 
 ## Roadmap
 
-- [ ] Reset spawn button
+- [X] Reset spawn button
 - [ ] Port to 1.15
 
 ## Usage in modpacks
