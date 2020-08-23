@@ -1,6 +1,8 @@
 package com.kingrunes.somnia.client.gui;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import net.minecraft.client.gui.GuiButton;
@@ -10,6 +12,8 @@ import net.minecraft.util.math.RayTraceResult;
 
 public class GuiSelectWakeTime extends GuiScreen
 {
+	private boolean resetSpawn = true;
+
 	@Override
 	public void initGui()
 	{
@@ -120,7 +124,7 @@ public class GuiSelectWakeTime extends GuiScreen
 			)
 		);
 
-		/*buttonList.add(
+		buttonList.add(
 			new GuiButton(
 				i++,
 				(width/2)-buttonWidth/2,
@@ -129,13 +133,13 @@ public class GuiSelectWakeTime extends GuiScreen
 				buttonHeight,
 				"Reset spawn: "+(resetSpawn ? "Yes" : "No")
 			)
-		);*/
+		);
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton par1GuiButton)
 	{
-		int i;
+		int i = 0;
 		switch (par1GuiButton.id)
 		{
 		case 0:
@@ -162,10 +166,19 @@ public class GuiSelectWakeTime extends GuiScreen
 		case 7:
 			i = 3000;
 			break;
+		case 8:
+			this.resetSpawn = !this.resetSpawn;
+			par1GuiButton.displayString = "Reset spawn: "+(resetSpawn ? "Yes" : "No");
+			return;
 		default:
 			return;
 		}
-		
+
+		IFatigue props = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null) {
+			props.shouldResetSpawn(this.resetSpawn);
+			Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x01, props.resetSpawn()));
+		}
 		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(mc.world.getTotalWorldTime(), i);
 		/*
 		 * Nice little hack to simulate a right click on the bed, don't try this at home kids

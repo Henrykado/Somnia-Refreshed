@@ -17,4 +17,8 @@ public interface IFatigue extends INBTSerializable<NBTTagCompound> {
     void resetFatigueCounter();
 
     void maxFatigueCounter();
+
+    void shouldResetSpawn(boolean resetSpawn);
+
+    boolean resetSpawn();
 }

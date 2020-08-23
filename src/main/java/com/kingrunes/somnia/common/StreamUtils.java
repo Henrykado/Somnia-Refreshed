@@ -39,6 +39,8 @@ public class StreamUtils
 			buffer.writeLong((Long)object);
 		else if (object instanceof Double)
 			buffer.writeDouble((Double)object);
+		else if (object instanceof Boolean)
+			buffer.writeBoolean((Boolean) object);
 		else
 			throw new IllegalArgumentException("unknown data type: " + object.getClass().getCanonicalName());
 	}

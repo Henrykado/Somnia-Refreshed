@@ -7,6 +7,7 @@ public class Fatigue implements IFatigue {
 
     private double fatigue;
     private int fatigueUpdateCounter = 0, sideEffectStage = -1;
+    private boolean resetSpawn = true;
 
     @Override
     public double getFatigue()
@@ -49,6 +50,16 @@ public class Fatigue implements IFatigue {
         this.fatigueUpdateCounter = 100;
     }
 
+    @Override
+    public void shouldResetSpawn(boolean resetSpawn) {
+        this.resetSpawn = resetSpawn;
+    }
+
+    @Override
+    public boolean resetSpawn() {
+        return this.resetSpawn;
+    }
+
 
     @Override
     public NBTTagCompound serializeNBT()
@@ -56,6 +67,7 @@ public class Fatigue implements IFatigue {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setDouble("fatigue", this.fatigue);
         tag.setInteger("sideEffectStage", this.sideEffectStage);
+        tag.setBoolean("resetSpawn", this.resetSpawn);
         return tag;
     }
 
@@ -64,5 +76,6 @@ public class Fatigue implements IFatigue {
     {
         this.fatigue = nbt.getDouble("fatigue");
         this.sideEffectStage = nbt.getInteger("sideEffectStage");
+        this.resetSpawn = nbt.getBoolean("resetSpawn");
     }
 }

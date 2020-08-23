@@ -15,7 +15,8 @@ public class SClassTransformer implements IClassTransformer
 	private static final List<String> transformedClasses = Lists.newArrayList("net.minecraft.client.renderer.EntityRenderer",
 			"net.minecraft.world.WorldServer",
 			"net.minecraft.world.chunk.Chunk",
-			"net.minecraft.server.MinecraftServer");
+			"net.minecraft.server.MinecraftServer",
+			"net.minecraft.entity.player.EntityPlayer");
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes)
 	{
@@ -43,12 +44,34 @@ public class SClassTransformer implements IClassTransformer
 			case 3:
 				patchMinecraftServer(classNode);
 				break;
+			case 4:
+				patchEntityPlayer(classNode, obf);
+				break;
 		}
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(cw);
 		System.out.println("[Somnia Core] Successfully patched class "+className);
 		return cw.toByteArray();
+	}
+
+	private void patchEntityPlayer(ClassNode classNode, boolean obf) {
+		String methodName = obf ? "a" : "wakeUpPlayer";
+
+		for (MethodNode m : classNode.methods) {
+			if (m.name.equals(methodName) && m.desc.equals("(ZZZ)V")) {
+				InsnList insnList = new InsnList();
+
+				LabelNode label9 = new LabelNode();
+				insnList.add(label9);
+				insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+				insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/Somnia", "shouldResetSpawn", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
+				insnList.add(new VarInsnNode(Opcodes.ISTORE, 3));
+				m.instructions.insertBefore(m.instructions.get(0), insnList);
+
+				break;
+			}
+		}
 	}
 
 	private void patchEntityRenderer(ClassNode classNode, boolean obf)

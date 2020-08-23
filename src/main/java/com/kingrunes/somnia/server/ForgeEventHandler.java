@@ -111,6 +111,7 @@ public class ForgeEventHandler
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
 			props.maxFatigueCounter();
+			props.shouldResetSpawn(true);
 		}
 		if (player.world.isRemote) {
 			Somnia.clientAutoWakeTime = -1;

@@ -201,4 +201,13 @@ public class Somnia
 		IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
 	}
+
+	@SuppressWarnings("unused")
+	public static boolean shouldResetSpawn(EntityPlayer player) {
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null) {
+			return props.resetSpawn();
+		}
+		return false;
+	}
 }

@@ -1,10 +1,13 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
@@ -16,6 +19,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientCustomPacketE
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
+import javax.annotation.Nullable;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -54,7 +58,7 @@ public class PacketHandler
 				handleWakePacket(player, in);
 				break;
 			case 0x02:
-				handlePropUpdatePacket(in);
+				handlePropUpdatePacket(in, player);
 				break;
 			case 0x03:
 				handleRightClickBlockPacket(player, in);
@@ -75,9 +79,24 @@ public class PacketHandler
 		Somnia.proxy.handleGUIOpenPacket();
 	}
 	
-	private void handlePropUpdatePacket(DataInputStream in) throws IOException 
+	private void handlePropUpdatePacket(DataInputStream in, @Nullable EntityPlayer player) throws IOException
 	{
-		Somnia.proxy.handlePropUpdatePacket(in);
+		if (player == null || player.world.isRemote) {
+			Somnia.proxy.handlePropUpdatePacket(in);
+			return;
+		}
+		byte target = in.readByte();
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+
+		if (target == 0x01 && props != null) {
+			int b = in.readInt();
+			for (int a=0; a<b; a++)
+			{
+				if (in.readByte() == 0x01) {
+					props.shouldResetSpawn(in.readBoolean());
+				}
+			}
+		}
 	}
 	
 	
