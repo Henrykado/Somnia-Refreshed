@@ -171,7 +171,7 @@ public class ClientTickHandler
 		
 		FontRenderer fontRenderer = mc.fontRenderer;
 		ScaledResolution scaledResolution = new ScaledResolution(mc);
-		if (event.phase == Phase.END && !mc.player.capabilities.isCreativeMode) {
+		if (event.phase == Phase.END && !mc.player.capabilities.isCreativeMode && !mc.player.isSpectator()) {
 			if (!mc.player.isPlayerSleeping() && !SomniaConfig.FATIGUE.fatigueSideEffects && ClientProxy.playerFatigue > SomniaConfig.FATIGUE.minimumFatigueToSleep) return;
 			String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);

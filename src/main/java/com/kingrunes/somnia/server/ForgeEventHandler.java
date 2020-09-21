@@ -48,7 +48,7 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
-		if (event.phase != Phase.START || event.player.world.isRemote || (event.player.capabilities.isCreativeMode && !event.player.isPlayerSleeping())) return;
+		if (event.phase != Phase.START || event.player.world.isRemote || ((event.player.capabilities.isCreativeMode || event.player.isSpectator()) && !event.player.isPlayerSleeping())) return;
 		
 		EntityPlayer player = event.player;
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
