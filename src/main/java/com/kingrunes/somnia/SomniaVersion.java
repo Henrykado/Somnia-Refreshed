@@ -7,7 +7,7 @@ public class SomniaVersion
 							// Incremented for new features or significant rewrites, reset with every new MAJOR_VERSION
 							MINOR_VERSION = 9,
 							// Incremented when a bugfix is made and the mod can be considered 'stable', reset with every new MINOR_VERSION
-							REVISION_VERSION = 8;
+							REVISION_VERSION = 9;
 							// Incremented automatically by the build system, never reset
 
 	public static final int BUILD = 0;
