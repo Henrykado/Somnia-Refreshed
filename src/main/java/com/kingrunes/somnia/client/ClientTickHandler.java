@@ -265,6 +265,7 @@ public class ClientTickHandler
 			// ETA
 			double total = 0.0d;
 			Double[] values = speedValues.toArray(new Double[0]); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
+			if (values == null) return; //We shouldn't get to this point, but issue #24 says something else
 			for (double value : values)
 				total += value;
 			double avg = total / values.length;
