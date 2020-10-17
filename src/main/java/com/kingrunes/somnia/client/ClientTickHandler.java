@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -264,8 +265,7 @@ public class ClientTickHandler
 
 			// ETA
 			double total = 0.0d;
-			Double[] values = speedValues.toArray(new Double[0]); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
-			if (values == null) return; //We shouldn't get to this point, but issue #24 says something else
+			Double[] values = speedValues.stream().filter(Objects::nonNull).toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
 			for (double value : values)
 				total += value;
 			double avg = total / values.length;
