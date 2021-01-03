@@ -3,11 +3,7 @@
 
 name: Main
 
-on:
-  push:
-    branches: [ mc-1.12.2 ]
-  pull_request:
-    branches: [ mc-1.12.2 ]
+on: [push, pull_request]
 
 jobs:
   build:
