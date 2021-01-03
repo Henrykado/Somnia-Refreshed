@@ -5,6 +5,8 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
+import com.kingrunes.somnia.common.util.SomniaUtil;
+import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.math.BlockPos;
@@ -47,7 +49,7 @@ public class GuiSelectWakeTime extends GuiScreen
 		this.drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		drawCenteredString(this.fontRenderer, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
-		drawCenteredString(this.fontRenderer, Somnia.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 - 66, 16777215);
+		drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 - 66, 16777215);
 	}
 
 	@Override
@@ -70,7 +72,7 @@ public class GuiSelectWakeTime extends GuiScreen
 			props.shouldResetSpawn(this.resetSpawn);
 			Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x01, props.resetSpawn()));
 		}
-		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(mc.world.getTotalWorldTime(), i);
+		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(mc.world.getTotalWorldTime(), i);
 		/*
 		 * Nice little hack to simulate a right click on the bed, don't try this at home kids
 		 */

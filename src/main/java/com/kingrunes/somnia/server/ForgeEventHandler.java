@@ -4,11 +4,13 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.api.capability.IFatigue;
-import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import com.kingrunes.somnia.common.util.InvUtil;
+import com.kingrunes.somnia.common.util.SomniaUtil;
+import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -23,17 +25,21 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class ForgeEventHandler
@@ -114,7 +120,7 @@ public class ForgeEventHandler
 			props.shouldResetSpawn(true);
 		}
 		if (player.world.isRemote) {
-			Somnia.clientAutoWakeTime = -1;
+			ClientProxy.clientAutoWakeTime = -1;
 		}
 	}
 
@@ -144,7 +150,7 @@ public class ForgeEventHandler
 				return;
 			}
 
-			if (!CommonProxy.enterSleepPeriod.isTimeWithin(24000)) {
+			if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) {
 				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 				return;
 			}
@@ -154,13 +160,13 @@ public class ForgeEventHandler
 				event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
 			}
 
-			if (!Somnia.checkFatigue(player)) {
+			if (!SomniaUtil.checkFatigue(player)) {
 				player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
 				return;
 			}
 
-			if (!SomniaConfig.OPTIONS.sleepWithArmor && !player.capabilities.isCreativeMode && Somnia.doesPlayHaveAnyArmor(player)) {
+			if (!SomniaConfig.OPTIONS.sleepWithArmor && !player.capabilities.isCreativeMode && SomniaUtil.doesPlayHaveAnyArmor(player)) {
 				player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
 				return;
@@ -184,14 +190,14 @@ public class ForgeEventHandler
 				IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 				if (props != null) {
 					long worldTime = player.world.getTotalWorldTime();
-					long wakeTime = Somnia.calculateWakeTime(worldTime, 0);
+					long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
 					double fatigueToReplenish = SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
 					props.setFatigue(props.getFatigue() - fatigueToReplenish);
 				}
 			}
 		}
 
-		if (player.isRiding())
+		if (player.isRiding() && !(player.getRidingEntity().getClass() == RailcraftPlugin.BED_CART_CLASS))
 		{
 			player.dismountRidingEntity();
 		}
@@ -222,9 +228,53 @@ public class ForgeEventHandler
 			player.world.updateAllPlayersSleepingFlag();
 		}
 
-		Somnia.updateWakeTime(player);
+		SomniaUtil.updateWakeTime(player);
 
 		event.setResult(EntityPlayer.SleepResult.OK);
+	}
+
+	@SubscribeEvent
+	public void worldLoadHook(WorldEvent.Load event)
+	{
+		if (event.getWorld() instanceof WorldServer)
+		{
+			WorldServer worldServer = (WorldServer)event.getWorld();
+			Somnia.instance.tickHandlers.add(new ServerTickHandler(worldServer));
+			Somnia.logger.info("Registering tick handler for loading world!");
+		}
+	}
+
+	@SubscribeEvent
+	public void worldUnloadHook(WorldEvent.Unload event)
+	{
+		if (event.getWorld() instanceof WorldServer)
+		{
+			WorldServer worldServer = (WorldServer)event.getWorld();
+			Iterator<ServerTickHandler> iter = Somnia.instance.tickHandlers.iterator();
+			ServerTickHandler serverTickHandler;
+			while (iter.hasNext())
+			{
+				serverTickHandler = iter.next();
+				if (serverTickHandler.worldServer == worldServer)
+				{
+					Somnia.logger.info("Removing tick handler for unloading world!");
+					iter.remove();
+					break;
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerDamage(LivingHurtEvent event)
+	{
+		if (event.getEntityLiving() instanceof EntityPlayerMP)
+		{
+			if (!(event.getEntityLiving()).isPlayerSleeping())
+				return;
+
+			Somnia.eventChannel.sendTo(PacketHandler.buildWakePacket(), (EntityPlayerMP) event.getEntityLiving());
+		}
 	}
 
 	@SubscribeEvent

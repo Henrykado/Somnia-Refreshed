@@ -1,6 +1,6 @@
 package com.kingrunes.somnia.client.gui;
 
-import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraftforge.fml.relauncher.Side;
@@ -16,7 +16,7 @@ public class GuiButtonHover extends GuiButton {
         super(buttonId, x, y, widthIn, heightIn, buttonText);
         this.wakeTime = wakeTime;
         this.buttonText = buttonText;
-        this.hoverText = Somnia.timeStringForWorldTime(wakeTime);
+        this.hoverText = SomniaUtil.timeStringForWorldTime(wakeTime);
     }
 
     @Override

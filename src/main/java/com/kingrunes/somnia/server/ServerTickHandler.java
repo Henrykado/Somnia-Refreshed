@@ -1,10 +1,10 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
-import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.util.SomniaState;
+import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.SPacketTimeUpdate;
@@ -76,7 +76,7 @@ public class ServerTickHandler
 				(
 					0x00,
 					0x00, currentState == ACTIVE ? (double)tps/20d : .0d,
-					0x01, currentState == ACTIVE ? Somnia.timeStringForWorldTime(worldServer.getWorldTime()) : "f:"+currentState.toString()
+					0x01, currentState == ACTIVE ? SomniaUtil.timeStringForWorldTime(worldServer.getWorldTime()) : "f:"+currentState.toString()
 				);
 				
 				Somnia.eventChannel.sendToDimension(packet, worldServer.provider.getDimension());
@@ -166,7 +166,7 @@ public class ServerTickHandler
 		 * Work around for making sure fatigue is updated with every tick (including Somnia ticks)
 		 */
 		for (Object obj : worldServer.playerEntities)
-			CommonProxy.forgeEventHandler.onPlayerTick(new TickEvent.PlayerTickEvent(Phase.START, (EntityPlayer) obj));
+			Somnia.forgeEventHandler.onPlayerTick(new TickEvent.PlayerTickEvent(Phase.START, (EntityPlayer) obj));
 		
 		incrementCounters();
 	}

@@ -1,7 +1,7 @@
-package com.kingrunes.somnia.client;
+package com.kingrunes.somnia.setup;
 
+import com.kingrunes.somnia.client.ClientTickHandler;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
-import com.kingrunes.somnia.common.CommonProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.common.MinecraftForge;
@@ -12,15 +12,15 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 @SideOnly(Side.CLIENT)
-public class ClientProxy extends CommonProxy
+public class ClientProxy implements IProxy
 {
 	public static double playerFatigue = -1;
 	public static final ClientTickHandler clientTickHandler = new ClientTickHandler();
-	
-	@Override
+    public static long clientAutoWakeTime = -1;
+
+    @Override
 	public void register()
 	{
-		super.register();
 		MinecraftForge.EVENT_BUS.register(this);
 		MinecraftForge.EVENT_BUS.register(clientTickHandler);
 	}
@@ -61,7 +61,7 @@ public class ClientProxy extends CommonProxy
 	@Override
 	public void handleWakePacket(EntityPlayerMP player)
 	{
+		player.wakeUpPlayer(true, true, true);
 		Minecraft.getMinecraft().displayGuiScreen(null);
-		super.handleWakePacket(player);
 	}
 }

@@ -65,7 +65,7 @@ public class SClassTransformer implements IClassTransformer
 				LabelNode label9 = new LabelNode();
 				insnList.add(label9);
 				insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-				insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/Somnia", "shouldResetSpawn", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
+				insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/common/util/SomniaUtil", "shouldResetSpawn", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
 				insnList.add(new VarInsnNode(Opcodes.ISTORE, 3));
 				m.instructions.insertBefore(m.instructions.get(0), insnList);
 
@@ -92,7 +92,7 @@ public class SClassTransformer implements IClassTransformer
 						if (min.name.equals(methodName2) && min.desc.equalsIgnoreCase("(FJ)V") && min.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 							min.setOpcode(Opcodes.INVOKESTATIC);
 							min.name = "renderWorld";
-							min.owner = "com/kingrunes/somnia/Somnia";
+							min.owner = "com/kingrunes/somnia/common/util/SomniaUtil";
 
 							vin = (VarInsnNode) m.instructions.get(m.instructions.indexOf(min) - 5);
 							m.instructions.remove(vin);
@@ -135,7 +135,7 @@ public class SClassTransformer implements IClassTransformer
 								min.setOpcode(Opcodes.INVOKESTATIC);
 								min.desc = "(Lnet/minecraft/world/WorldServer;)Z";
 								min.name = "doMobSpawning";
-								min.owner = "com/kingrunes/somnia/Somnia";
+								min.owner = "com/kingrunes/somnia/common/util/SomniaUtil";
 
 								m.instructions.remove(lin);
 								m.instructions.remove(m.instructions.get(index-2));
@@ -173,7 +173,7 @@ public class SClassTransformer implements IClassTransformer
 							min.setOpcode(Opcodes.INVOKESTATIC);
 							min.desc = "(Lnet/minecraft/world/chunk/Chunk;)V";
 							min.name = "chunkLightCheck";
-							min.owner = "com/kingrunes/somnia/Somnia";
+							min.owner = "com/kingrunes/somnia/common/util/SomniaUtil";
 						}
 					}
 				}
@@ -191,21 +191,21 @@ public class SClassTransformer implements IClassTransformer
 			MethodNode m = methods.next();
 			if ((m.name.equals("C") || m.name.equals("tick")) && m.desc.equals("()V"))
 			{
-				AbstractInsnNode lrin = null;
+				AbstractInsnNode aInsnNode = null;
 				Iterator<AbstractInsnNode> iter = m.instructions.iterator();
 				while (iter.hasNext())
 				{
 					ain = iter.next();
 					if (ain instanceof InsnNode && (ain).getOpcode() == Opcodes.RETURN)
-						lrin = ain;
+						aInsnNode = ain;
 				}
 
-				if (lrin != null)
+				if (aInsnNode != null)
 				{
 					InsnList toInject = new InsnList();
-					toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/Somnia", "tick", "()V", false));
+					toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/common/util/SomniaUtil", "tick", "()V", false));
 
-					m.instructions.insertBefore(lrin, toInject);
+					m.instructions.insertBefore(aInsnNode, toInject);
 				}
 				break;
 			}

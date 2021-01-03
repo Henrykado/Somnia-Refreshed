@@ -4,6 +4,7 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.StreamUtils;
+import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -43,11 +44,6 @@ public class ClientTickHandler
 	public static final String	TRANSLATION_FORMAT = "somnia.status.%s",
 			SPEED_FORMAT = "%sx%s",
 			ETA_FORMAT = WHITE + "(%s:%s)";
-
-	public static final byte[]	BYTES_WHITE = new byte[]{ (byte) 255, (byte) 255, (byte) 255 },
-			BYTES_DARK_RED = new byte[]{ (byte) 171, 0, 0 },
-			BYTES_RED = new byte[]{ (byte) 255, 0, 0 },
-			BYTES_GOLD = new byte[]{ (byte) 240, (byte) 200, 30 };
 	
 	private boolean moddedFOV = false;
 	private float fov = -1;
@@ -156,9 +152,9 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		if (Somnia.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= Somnia.clientAutoWakeTime)
+		if (ClientProxy.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= ClientProxy.clientAutoWakeTime)
 		{
-			Somnia.clientAutoWakeTime = -1;
+			ClientProxy.clientAutoWakeTime = -1;
 			Somnia.eventChannel.sendToServer(PacketHandler.buildWakePacket());
 		}
 	}
@@ -239,13 +235,13 @@ public class ClientTickHandler
 		 * ETA
 		 * Clock
 		 */
-		if (startTicks != -1L && Somnia.clientAutoWakeTime != -1)
+		if (startTicks != -1L && ClientProxy.clientAutoWakeTime != -1)
 		{
 			// Progress Bar
 			mc.getTextureManager().bindTexture(Gui.ICONS);
 
 			double 	rel = mc.world.getTotalWorldTime()-startTicks,
-					diff = Somnia.clientAutoWakeTime-startTicks,
+					diff = ClientProxy.clientAutoWakeTime-startTicks,
 					progress = rel / diff;
 
 			int 	x = 20,
@@ -261,7 +257,7 @@ public class ClientTickHandler
 
 			// Multiplier
 			int offsetX = SomniaConfig.FATIGUE.displayETASleep.equals("center") ? scaledResolution.getScaledWidth()/2 - 80 : SomniaConfig.FATIGUE.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(scaledResolution, x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
+			renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
 
 			// ETA
 			double total = 0.0d;
@@ -274,7 +270,7 @@ public class ClientTickHandler
 			int etaSeconds = etaTotalSeconds % 60,
 					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
 
-			renderScaledString(scaledResolution, x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+			renderScaledString(x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 
 			// Clock
 			renderClock(maxWidth - 40, 30, 4.0f);
@@ -293,7 +289,7 @@ public class ClientTickHandler
 		}
 	}
 
-	private void renderScaledString(ScaledResolution scaledResolution, int x, int y, float scale, String format, Object... args)
+	private void renderScaledString(int x, int y, float scale, String format, Object... args)
 	{
 		if (mc.currentScreen == null) return;
 		String str = String.format(format, args);
@@ -311,8 +307,6 @@ public class ClientTickHandler
 					);
 		}
 		glPopMatrix();
-
-		//return (int) (fontRendererObj.getStringWidth(str) * scale);
 	}
 
 	private void renderClock(int x, int y, float scale)
@@ -324,18 +318,6 @@ public class ClientTickHandler
 			mc.getRenderItem().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
 		}
 		glPopMatrix();
-	}
-
-	public static byte[] getColorForSpeed(double speed)
-	{
-		if (speed < 8)
-			return BYTES_WHITE;
-		else if (speed < 20)
-			return BYTES_DARK_RED;
-		else if (speed < 30)
-			return BYTES_RED;
-		else
-			return BYTES_GOLD;
 	}
 
 	public static String getColorStringForSpeed(double speed)

@@ -1,19 +1,27 @@
 package com.kingrunes.somnia;
 
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
-import com.kingrunes.somnia.api.capability.IFatigue;
-import com.kingrunes.somnia.common.CommonProxy;
+import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
-import com.kingrunes.somnia.common.util.SomniaState;
+import com.kingrunes.somnia.common.compat.CompatModule;
+import com.kingrunes.somnia.common.compat.RailcraftPlugin;
+import com.kingrunes.somnia.common.util.TimePeriod;
+import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;
+import com.kingrunes.somnia.setup.IProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -21,12 +29,10 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -39,26 +45,19 @@ public class Somnia
 	public static final String NAME = "Somnia";
 	public static final String VERSION = SomniaVersion.getVersionString();
 	
-	public List<ServerTickHandler> tickHandlers;
-	public List<WeakReference<EntityPlayerMP>> ignoreList;
+	public final List<ServerTickHandler> tickHandlers = new ArrayList<>();
+	public final List<WeakReference<EntityPlayerMP>> ignoreList = new ArrayList<>();
 	
 	@Instance(Somnia.MOD_ID)
 	public static Somnia instance;
 	
-	@SidedProxy(serverSide="com.kingrunes.somnia.common.CommonProxy", clientSide="com.kingrunes.somnia.client.ClientProxy")
-	public static CommonProxy proxy;
-
+	@SidedProxy(serverSide="com.kingrunes.somnia.setup.ServerProxy", clientSide="com.kingrunes.somnia.setup.ClientProxy")
+	public static IProxy proxy;
 	public static Logger logger;
-
 	public static FMLEventChannel eventChannel;
-	
-	public static long clientAutoWakeTime = -1;
-	
-	public Somnia()
-	{
-		this.tickHandlers = new ArrayList<>();
-		this.ignoreList = new ArrayList<>();
-	}
+	public static TimePeriod enterSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.enterSleepStart, SomniaConfig.TIMINGS.enterSleepEnd);
+	public static TimePeriod validSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.validSleepStart, SomniaConfig.TIMINGS.validSleepEnd);
+	public static ForgeEventHandler forgeEventHandler;
 	
 	@EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -76,6 +75,12 @@ public class Somnia
 		eventChannel.register(new PacketHandler());
 
 		proxy.register();
+
+		MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
+
+		forgeEventHandler = new ForgeEventHandler();
+		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
+		CapabilityFatigue.register();
 	}
 	
 	@EventHandler
@@ -84,130 +89,30 @@ public class Somnia
 		event.registerServerCommand(new SomniaCommand());
 	}
 
-	@SuppressWarnings("unused")
-	public static void tick()
-	{
-		synchronized (Somnia.instance.tickHandlers)
-		{
-			for (ServerTickHandler serverTickHandler : Somnia.instance.tickHandlers)
-				serverTickHandler.tickStart();
-		}
-	}
-	
-	public static String timeStringForWorldTime(long time)
-	{
-		time += 6000; // Tick -> Time offset
-		
-		time = time % 24000;
-		int hours = (int) Math.floor(time / (double)1000);
-		int minutes = (int) ((time % 1000) / 1000.0d * 60);
-		
-		String lsHours = String.valueOf(hours);
-		String lsMinutes = String.valueOf(minutes);
-		
-		if (lsHours.length() == 1)
-			lsHours = "0"+lsHours;
-		if (lsMinutes.length() == 1)
-			lsMinutes = "0"+lsMinutes;
-		
-		return lsHours + ":" + lsMinutes;
-	}
+	@SubscribeEvent
+	public void interactHook(PlayerInteractEvent event) {
+		World world = event.getWorld();
 
-	@SuppressWarnings("unused")
-	public static boolean doesPlayHaveAnyArmor(EntityPlayer e)
-	{
-		ItemStack[] armor = e.inventory.armorInventory.toArray(new ItemStack[0]);
-		for (ItemStack itemStack : armor) {
-			if (itemStack != ItemStack.EMPTY)
-				return true;
-		}
-		return false;
-	}
+		BlockPos pos = event.getPos();
 
-	public static long calculateWakeTime(long totalWorldTime, int i)
-	{
-		long l;
-		long timeInDay = totalWorldTime % 24000L;
-		l = totalWorldTime - timeInDay + i;
-		if (timeInDay > i)
-			l += 24000L;
-		return l;
-	}
+		EntityPlayer player = event.getEntityPlayer();
 
-	/*
-	 * These methods are referenced by ASM generated bytecode
-	 * 
-	*/
-
-	@SuppressWarnings("unused")
-	@SideOnly(Side.CLIENT)
-	public static void renderWorld(float par1, long par2)
-	{
-		if (Minecraft.getMinecraft().player.isPlayerSleeping() && SomniaConfig.PERFORMANCE.disableRendering)
-		{
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			return;
-		}
-		Minecraft.getMinecraft().entityRenderer.renderWorld(par1, par2);
-	}
-
-	@SuppressWarnings("unused")
-	public static boolean doMobSpawning(WorldServer par1WorldServer)
-	{
-		boolean defValue = par1WorldServer.getGameRules().getBoolean("doMobSpawning");
-		if (!SomniaConfig.PERFORMANCE.disableCreatureSpawning || !defValue)
-			return defValue;
-		
-		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
-		{
-			if (serverTickHandler.worldServer == par1WorldServer)
-				return serverTickHandler.currentState != SomniaState.ACTIVE;
-		}
-		
-		throw new IllegalStateException("tickHandlers doesn't contain match for given world server");
-	}
-
-	@SuppressWarnings("unused")
-	public static void chunkLightCheck(Chunk chunk)
-	{
-		if (!SomniaConfig.PERFORMANCE.disableMoodSoundAndLightCheck)
-			chunk.checkLight();
-		
-		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
-		{
-			if (serverTickHandler.worldServer == chunk.getWorld())
+		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && ((PlayerInteractEvent.EntityInteractSpecific)event).getTarget().getClass() == RailcraftPlugin.BED_CART_CLASS)) {
+			if (player.bedInRange(pos, null)) //the facing can be null
 			{
-				if (serverTickHandler.currentState != SomniaState.ACTIVE)
-					chunk.checkLight();
-				return;
+				ItemStack currentItem = player.inventory.getCurrentItem();
+				ResourceLocation registryName = currentItem.getItem().getRegistryName();
+				if (currentItem != ItemStack.EMPTY && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
+					if (world.isRemote) {
+						Minecraft minecraft = Minecraft.getMinecraft();
+						if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
+					}
+					else Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
+
+					event.setCancellationResult(EnumActionResult.SUCCESS);
+					event.setCanceled(true);
+				}
 			}
 		}
-		
-		chunk.checkLight();
-	}
-
-	@SuppressWarnings("unused")
-	public static void updateWakeTime(EntityPlayer player) {
-		if (clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
-		long totalWorldTime = player.world.getTotalWorldTime();
-		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
-	}
-
-	@SuppressWarnings("unused")
-	public static boolean checkFatigue(EntityPlayer player) {
-		boolean ignoreMonsters = SomniaConfig.OPTIONS.ignoreMonsters;
-		boolean armor = SomniaConfig.OPTIONS.sleepWithArmor;
-
-		IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
-	}
-
-	@SuppressWarnings("unused")
-	public static boolean shouldResetSpawn(EntityPlayer player) {
-		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		if (props != null) {
-			return props.resetSpawn();
-		}
-		return false;
 	}
 }
