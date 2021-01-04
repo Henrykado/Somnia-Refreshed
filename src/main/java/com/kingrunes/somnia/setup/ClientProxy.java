@@ -2,7 +2,9 @@ package com.kingrunes.somnia.setup;
 
 import com.kingrunes.somnia.client.ClientTickHandler;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
+import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
@@ -63,5 +65,12 @@ public class ClientProxy implements IProxy
 	{
 		player.wakeUpPlayer(true, true, true);
 		Minecraft.getMinecraft().displayGuiScreen(null);
+	}
+
+	@Override
+	public void updateWakeTime(EntityPlayer player) {
+		if (ClientProxy.clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
+		long totalWorldTime = player.world.getTotalWorldTime();
+		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
 	}
 }

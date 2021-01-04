@@ -92,8 +92,9 @@ public class PacketHandler
 			int b = in.readInt();
 			for (int a=0; a<b; a++)
 			{
-				if (in.readByte() == 0x01) {
-					props.shouldResetSpawn(in.readBoolean());
+				int val = in.readByte();
+				if (val == 0x01) {
+					props.setResetSpawn(in.readBoolean());
 				}
 			}
 		}

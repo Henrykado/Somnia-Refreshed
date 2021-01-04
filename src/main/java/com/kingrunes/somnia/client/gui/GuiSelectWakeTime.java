@@ -69,8 +69,8 @@ public class GuiSelectWakeTime extends GuiScreen
 
 		IFatigue props = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
-			props.shouldResetSpawn(this.resetSpawn);
-			Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x01, props.resetSpawn()));
+			props.setResetSpawn(this.resetSpawn);
+			Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x01, props.shouldResetSpawn()));
 		}
 		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(mc.world.getTotalWorldTime(), i);
 		/*

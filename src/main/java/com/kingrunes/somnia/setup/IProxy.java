@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.setup;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.io.DataInputStream;
@@ -13,4 +14,6 @@ public interface IProxy {
     void handlePropUpdatePacket(DataInputStream in) throws IOException;
 
     void handleWakePacket(EntityPlayerMP player);
+
+    void updateWakeTime(EntityPlayer player);
 }

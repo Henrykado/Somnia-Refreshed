@@ -1,5 +1,7 @@
 package com.kingrunes.somnia.common;
 
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.util.InvUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,7 +43,16 @@ public class PlayerSleepTickHandler
 			//Reset fatigue in case you pick the charm up while sleeping. Doesn't trigger otherwise, because Somnia keeps the sleep timer below 100
 			if (player.sleepTimer > 99 && Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP)) {
 				player.sleepTimer = 100;
+				state.sleepOverride = false;
 				return;
+			}
+
+			if (player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) {
+				IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+				if (props.shouldSleepNormally()) {
+					state.sleepOverride = false;
+					return;
+				}
 			}
 
 			if (!CompatModule.isBed(player, pos)) {

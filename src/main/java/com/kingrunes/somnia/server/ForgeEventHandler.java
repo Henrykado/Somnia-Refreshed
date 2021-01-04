@@ -4,6 +4,7 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.api.capability.IFatigue;
+import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
@@ -14,23 +15,28 @@ import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -118,7 +124,8 @@ public class ForgeEventHandler
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
 			props.maxFatigueCounter();
-			props.shouldResetSpawn(true);
+			props.setResetSpawn(true);
+			props.setSleepNormally(false);
 		}
 		if (player.world.isRemote) {
 			ClientProxy.clientAutoWakeTime = -1;
@@ -135,6 +142,8 @@ public class ForgeEventHandler
 		final IBlockState state = player.world.isBlockLoaded(pos) ? player.world.getBlockState(pos) : null;
 		final boolean isBed = state != null && state.getBlock().isBed(state, player.world, pos, player);
 		final EnumFacing enumfacing = isBed && state.getBlock() instanceof BlockHorizontal ? state.getValue(BlockHorizontal.FACING) : null;
+		final boolean sleepCharm = Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP);
+		final boolean sleepNormally = player.isSneaking();
 
 		if (!player.world.isRemote)
 		{
@@ -150,7 +159,13 @@ public class ForgeEventHandler
 				return;
 			}
 
-			if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) {
+			if (sleepNormally || sleepCharm) {
+				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
+					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
+					return;
+				}
+			}
+			else if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) {
 				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 				return;
 			}
@@ -181,19 +196,18 @@ public class ForgeEventHandler
 				event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
 				return;
 			}
+		}
 
-			if (Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP)) {
-				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
-					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
-					return;
-				}
-				IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-				if (props != null) {
-					long worldTime = player.world.getTotalWorldTime();
-					long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
-					double fatigueToReplenish = SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
-					props.setFatigue(props.getFatigue() - fatigueToReplenish);
-				}
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null) {
+			if (sleepCharm) {
+				long worldTime = player.world.getTotalWorldTime();
+				long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
+				double fatigueToReplenish = SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
+				props.setFatigue(props.getFatigue() - fatigueToReplenish);
+			}
+			else if (sleepNormally) {
+				props.setSleepNormally(true);
 			}
 		}
 
@@ -228,7 +242,7 @@ public class ForgeEventHandler
 			player.world.updateAllPlayersSleepingFlag();
 		}
 
-		SomniaUtil.updateWakeTime(player);
+		Somnia.proxy.updateWakeTime(player);
 
 		event.setResult(EntityPlayer.SleepResult.OK);
 	}
@@ -260,6 +274,33 @@ public class ForgeEventHandler
 					Somnia.logger.info("Removing tick handler for unloading world!");
 					iter.remove();
 					break;
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void interactHook(PlayerInteractEvent event) {
+		World world = event.getWorld();
+
+		BlockPos pos = event.getPos();
+
+		EntityPlayer player = event.getEntityPlayer();
+
+		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && ((PlayerInteractEvent.EntityInteractSpecific)event).getTarget().getClass() == RailcraftPlugin.BED_CART_CLASS)) {
+			if (player.bedInRange(pos, null)) //the facing can be null
+			{
+				ItemStack currentItem = player.inventory.getCurrentItem();
+				ResourceLocation registryName = currentItem.getItem().getRegistryName();
+				if (currentItem != ItemStack.EMPTY && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
+					if (world.isRemote) {
+						Minecraft minecraft = Minecraft.getMinecraft();
+						if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
+					}
+					else Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
+
+					event.setCancellationResult(EnumActionResult.SUCCESS);
+					event.setCanceled(true);
 				}
 			}
 		}

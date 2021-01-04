@@ -1,11 +1,11 @@
 package com.kingrunes.somnia.common.util;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
-import java.util.Iterator;
 import java.util.List;
 
 public enum SomniaState
@@ -33,22 +33,25 @@ public enum SomniaState
 		@SuppressWarnings("unchecked")
 		List<EntityPlayer> players = handler.worldServer.playerEntities;
 		
-		boolean sleeping, anySleeping = false, allSleeping = true;
-		
-		Iterator<EntityPlayer> iter = players.iterator();
-		while (iter.hasNext())
-		{
-			EntityPlayerMP player = (EntityPlayerMP) iter.next();
+		boolean sleeping, anySleeping = false, allSleeping = true, normallySleeping = true;
+
+		for (EntityPlayer entityPlayer : players) {
+			EntityPlayerMP player = (EntityPlayerMP) entityPlayer;
 			sleeping = player.isPlayerSleeping() || ListUtils.containsRef(player, Somnia.instance.ignoreList);
 			anySleeping |= sleeping;
 			allSleeping &= sleeping;
+			if (player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) {
+				normallySleeping &= player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).shouldSleepNormally();
+			}
 		}
-		
-		if (allSleeping)
-			return ACTIVE;
-		else if (anySleeping)
-			return WAITING_PLAYERS;
-		else
-			return IDLE;
+
+		if (!normallySleeping) {
+			if (allSleeping)
+				return ACTIVE;
+			else if (anySleeping)
+				return WAITING_PLAYERS;
+		}
+
+		return IDLE;
 	}
 }

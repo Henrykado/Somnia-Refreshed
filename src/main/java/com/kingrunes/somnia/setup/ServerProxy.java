@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.setup;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.io.DataInputStream;
@@ -20,4 +21,7 @@ public class ServerProxy implements IProxy
 	{
 		player.wakeUpPlayer(true, true, true);
 	}
+
+	@Override
+	public void updateWakeTime(EntityPlayer player) {}
 }

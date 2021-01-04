@@ -5,7 +5,6 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.server.ServerTickHandler;
-import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -108,13 +107,6 @@ public class SomniaUtil {
     }
 
     @SuppressWarnings("unused")
-    public static void updateWakeTime(EntityPlayer player) {
-        if (ClientProxy.clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
-        long totalWorldTime = player.world.getTotalWorldTime();
-        ClientProxy.clientAutoWakeTime = calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
-    }
-
-    @SuppressWarnings("unused")
     public static boolean checkFatigue(EntityPlayer player) {
         IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
         return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
@@ -124,7 +116,7 @@ public class SomniaUtil {
     public static boolean shouldResetSpawn(EntityPlayer player) {
         IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
         if (props != null) {
-            return props.resetSpawn();
+            return props.shouldResetSpawn();
         }
         return false;
     }
