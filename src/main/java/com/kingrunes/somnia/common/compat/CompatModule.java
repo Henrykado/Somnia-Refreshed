@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 public class CompatModule {
+    public static final ResourceLocation CHARM_SLEEP = new ResourceLocation("darkutils", "charm_sleep");
 
     /**
      * Check if the world should be simulated in this bed

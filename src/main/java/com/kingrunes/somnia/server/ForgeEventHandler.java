@@ -7,6 +7,7 @@ import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import com.kingrunes.somnia.common.util.InvUtil;
 import com.kingrunes.somnia.common.util.SomniaUtil;
@@ -124,7 +125,6 @@ public class ForgeEventHandler
 		}
 	}
 
-	private final ResourceLocation CHARM_SLEEP =  new ResourceLocation("darkutils", "charm_sleep");
 	/**
 	 * Re-implementation of the sleep method.
 	 */
@@ -182,7 +182,7 @@ public class ForgeEventHandler
 				return;
 			}
 
-			if (Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, this.CHARM_SLEEP)) {
+			if (Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP)) {
 				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 					return;
