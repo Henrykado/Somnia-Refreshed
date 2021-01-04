@@ -44,8 +44,6 @@ dependencies {
 
     //compile "com.azanor:Baubles:${VERSION_BAUBLES}" Temporarily disabled until ModMaven is back up
     deobfCompile "curse.maven:baubles-227083:2518667"
-    deobfCompile "curse.maven:dark-utilities-242195:2813586"
-    deobfCompile "curse.maven:bookshelf-228525:2836960"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

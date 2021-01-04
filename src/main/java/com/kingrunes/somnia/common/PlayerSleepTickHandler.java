@@ -55,7 +55,7 @@ public class PlayerSleepTickHandler
 				}
 			}
 
-			if (!CompatModule.isBed(player, pos)) {
+			if (!CompatModule.isPlayerInBed(player, pos)) {
 				state.sleepOverride = false;
 				return;
 			}

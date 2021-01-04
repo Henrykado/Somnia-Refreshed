@@ -4,6 +4,7 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
@@ -35,12 +37,13 @@ public class SomniaUtil {
         return lsHours + ":" + lsMinutes;
     }
 
-    public static boolean doesPlayHaveAnyArmor(EntityPlayer e)
+    public static boolean doesPlayHaveAnyArmor(EntityPlayer player)
     {
-        ItemStack[] armor = e.inventory.armorInventory.toArray(new ItemStack[0]);
-        for (ItemStack itemStack : armor) {
-            if (itemStack != ItemStack.EMPTY)
+        for (ItemStack stack : player.inventory.armorInventory) {
+            if (!stack.isEmpty()) {
+                if (Loader.isModLoaded("openblocks") && stack.getItem().getRegistryName().equals(CompatModule.SLEEPING_BAG)) return false;
                 return true;
+            }
         }
         return false;
     }

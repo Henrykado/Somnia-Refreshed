@@ -287,12 +287,12 @@ public class ForgeEventHandler
 
 		EntityPlayer player = event.getEntityPlayer();
 
-		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && ((PlayerInteractEvent.EntityInteractSpecific)event).getTarget().getClass() == RailcraftPlugin.BED_CART_CLASS)) {
+		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isPlayerInBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && ((PlayerInteractEvent.EntityInteractSpecific)event).getTarget().getClass() == RailcraftPlugin.BED_CART_CLASS)) {
 			if (player.bedInRange(pos, null)) //the facing can be null
 			{
 				ItemStack currentItem = player.inventory.getCurrentItem();
 				ResourceLocation registryName = currentItem.getItem().getRegistryName();
-				if (currentItem != ItemStack.EMPTY && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
+				if (currentItem.isEmpty() && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
 					if (world.isRemote) {
 						Minecraft minecraft = Minecraft.getMinecraft();
 						if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
