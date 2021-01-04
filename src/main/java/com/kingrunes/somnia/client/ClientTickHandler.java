@@ -1,9 +1,12 @@
 package com.kingrunes.somnia.client;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.StreamUtils;
+import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -33,26 +36,22 @@ public class ClientTickHandler
 	private final Minecraft mc = Minecraft.getMinecraft();
 
 	public static final String 	COLOR = new String(new char[]{ (char)167 }),
-			BLACK = COLOR+"0",
-			WHITE = COLOR+"f",
-			RED = COLOR+"c",
-			DARK_RED = COLOR+"4",
-			GOLD = COLOR+"6";
-
-	private static final String FATIGUE_FORMAT = WHITE + "Fatigue: %.2f";
+								WHITE = COLOR+"f",
+								RED = COLOR+"c",
+								DARK_RED = COLOR+"4",
+								GOLD = COLOR+"6";
 
 	public static final String	TRANSLATION_FORMAT = "somnia.status.%s",
-			SPEED_FORMAT = "%sx%s",
-			ETA_FORMAT = WHITE + "(%s:%s)";
+								SPEED_FORMAT = "%sx%s",
+								ETA_FORMAT = WHITE + "(%s:%s)";
+
+	private static final String FATIGUE_FORMAT = WHITE + "Fatigue: %.2f";
 	
 	private boolean moddedFOV = false;
 	private float fov = -1;
-	
 	private boolean muted = false;
 	private float defVol;
-
 	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
-
 	public long startTicks = -1L;
 	public double speed = 0;
 	private final List<Double> speedValues = new ArrayList<>();
@@ -170,7 +169,12 @@ public class ClientTickHandler
 		ScaledResolution scaledResolution = new ScaledResolution(mc);
 		if (event.phase == Phase.END && !mc.player.capabilities.isCreativeMode && !mc.player.isSpectator()) {
 			if (!mc.player.isPlayerSleeping() && !SomniaConfig.FATIGUE.fatigueSideEffects && ClientProxy.playerFatigue > SomniaConfig.FATIGUE.minimumFatigueToSleep) return;
-			String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
+
+			String str;
+			IFatigue props = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+			if (SomniaConfig.FATIGUE.simpleFatigueDisplay && props != null) str = WHITE + SomniaUtil.translate("somnia.side_effect."+getSideEffectStage(ClientProxy.playerFatigue));
+			else str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
+
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
 			String param = mc.player.isPlayerSleeping() ? "br" : SomniaConfig.FATIGUE.displayFatigue.toLowerCase();
 			switch (param) {
@@ -209,6 +213,14 @@ public class ClientTickHandler
 			this.startTicks = -1;
 			this.speed = 0;
 		}
+	}
+
+	private int getSideEffectStage(double fatigue) {
+		if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1) return 0;
+		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage2) return 1;
+		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage3) return 2;
+		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage4) return 3;
+		else return 4;
 	}
 
 	private void renderSleepGui(ScaledResolution scaledResolution) {

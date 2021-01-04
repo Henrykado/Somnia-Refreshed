@@ -36,6 +36,9 @@ public class SomniaConfig {
         @Config.Comment("The fatigue counter's position. Accepted values: tc (top center), tl (top left), tr (top right), bc (bottom center), bl (bottom left), br (bottom right)")
         public String displayFatigue = "br";
 
+        @Config.Comment("Simplifies the numerical fatigue counter to words")
+        public boolean simpleFatigueDisplay = false;
+
         @Config.Comment("The ETA and multiplier display position in somnia's sleep gui. Accepted values: right, center, left")
         public String displayETASleep = "left";
 

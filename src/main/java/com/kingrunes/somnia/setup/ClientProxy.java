@@ -37,11 +37,12 @@ public class ClientProxy implements IProxy
 	public void handlePropUpdatePacket(DataInputStream in) throws IOException
 	{
 		byte target = in.readByte();
+		EntityPlayer player = Minecraft.getMinecraft().player;
 		
 		switch (target)
 		{
 		case 0x00:
-			if (Minecraft.getMinecraft().player.isPlayerSleeping())
+			if (player.isPlayerSleeping())
 			{
 				int b = in.readInt();
 				for (int a=0; a<b; a++)
@@ -52,7 +53,8 @@ public class ClientProxy implements IProxy
 			int b = in.readInt();
 			for (int a=0; a<b; a++)
 			{
-				if (in.readByte() == 0x00) {
+				byte val = in.readByte();
+				if (val == 0x00) {
 					playerFatigue = in.readDouble();
 				}
 			}

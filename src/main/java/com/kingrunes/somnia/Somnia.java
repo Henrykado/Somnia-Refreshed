@@ -26,12 +26,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, version="-au", dependencies = "after:railcraft; after:baubles")
+@Mod(modid = Somnia.MOD_ID, name = Somnia.NAME, dependencies = "after:railcraft; after:baubles")
 public class Somnia
 {
 	public static final String MOD_ID = "somnia";
 	public static final String NAME = "Somnia";
-	public static final String VERSION = SomniaVersion.getVersionString();
 	
 	public final List<ServerTickHandler> tickHandlers = new ArrayList<>();
 	public final List<WeakReference<EntityPlayerMP>> ignoreList = new ArrayList<>();
@@ -52,7 +51,6 @@ public class Somnia
 	{
 		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
-		event.getModMetadata().version = VERSION;
 	}
 	
 	@EventHandler

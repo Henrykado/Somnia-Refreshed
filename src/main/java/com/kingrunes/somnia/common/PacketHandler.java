@@ -7,7 +7,6 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
@@ -79,12 +78,13 @@ public class PacketHandler
 		Somnia.proxy.handleGUIOpenPacket();
 	}
 	
-	private void handlePropUpdatePacket(DataInputStream in, @Nullable EntityPlayer player) throws IOException
+	private void handlePropUpdatePacket(DataInputStream in, @Nullable EntityPlayerMP player) throws IOException
 	{
 		if (player == null || player.world.isRemote) {
 			Somnia.proxy.handlePropUpdatePacket(in);
 			return;
 		}
+
 		byte target = in.readByte();
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 

@@ -8,6 +8,7 @@ import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.relauncher.Side;
@@ -104,6 +105,10 @@ public class SomniaUtil {
         }
 
         chunk.checkLight();
+    }
+
+    public static String translate(String key) {
+        return I18n.translateToLocal(key);
     }
 
     @SuppressWarnings("unused")
