@@ -17,10 +17,5 @@ All information is available on Somnia's ![wiki](https://github.com/Su5eD/Somnia
 - Works properly on servers
 - Fixed selecting wake time
 
-## Roadmap
-
-- [X] Reset spawn button
-- [ ] Port to 1.15
-
 ## Usage in modpacks
 You are free to use this mod in your FREE mod packs (advertising such as adf.ly is fine), just be sure to give credit to the mod authors.
