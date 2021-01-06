@@ -2,6 +2,7 @@ package com.kingrunes.somnia.common.util;
 
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
+import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,36 +22,31 @@ public enum SomniaState
 	{
 		long totalWorldTime = handler.worldServer.getTotalWorldTime();
 		
-		/*if (handler.currentState != ACTIVE && handler.lastSleepStart > 0 && totalWorldTime-handler.lastSleepStart < Somnia.proxy.sleepCooldown)
-			return COOLDOWN;*/
-		
 		if (!Somnia.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
 			return NOT_NOW;
 		
 		if (handler.worldServer.playerEntities.isEmpty())
 			return IDLE;
 		
-		@SuppressWarnings("unchecked")
 		List<EntityPlayer> players = handler.worldServer.playerEntities;
 		
-		boolean sleeping, anySleeping = false, allSleeping = true, normallySleeping = true;
+		boolean anySleeping = false, allSleeping = true;
+		int somniaSleep = 0, normalSleep = 0;
 
 		for (EntityPlayer entityPlayer : players) {
 			EntityPlayerMP player = (EntityPlayerMP) entityPlayer;
-			sleeping = player.isPlayerSleeping() || ListUtils.containsRef(player, Somnia.instance.ignoreList);
+			boolean sleeping = player.isPlayerSleeping() || ListUtils.containsRef(player, Somnia.instance.ignoreList);
 			anySleeping |= sleeping;
 			allSleeping &= sleeping;
-			if (player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) {
-				normallySleeping &= player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).shouldSleepNormally();
-			}
+
+			IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+			if (props != null && props.shouldSleepNormally()) normalSleep++;
+			else somniaSleep++;
 		}
 
-		if (!normallySleeping) {
-			if (allSleeping)
-				return ACTIVE;
-			else if (anySleeping)
-				return WAITING_PLAYERS;
-		}
+		if (allSleeping) {
+			if (somniaSleep >= normalSleep) return ACTIVE;
+		} else if (anySleeping) return WAITING_PLAYERS;
 
 		return IDLE;
 	}
