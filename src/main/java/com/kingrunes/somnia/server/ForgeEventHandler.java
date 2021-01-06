@@ -1,6 +1,7 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.SomniaAPI;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.api.capability.IFatigue;
@@ -17,9 +18,11 @@ import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
@@ -34,6 +37,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -45,6 +49,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
 import java.util.List;
@@ -301,6 +306,28 @@ public class ForgeEventHandler
 
 					event.setCancellationResult(EnumActionResult.SUCCESS);
 					event.setCanceled(true);
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event)
+	{
+		ItemStack stack = event.getItem();
+		if (stack.getItemUseAction() == EnumAction.DRINK)
+		{
+			for (Pair<ItemStack, Double> pair : SomniaAPI.getCoffeeList())
+			{
+				if (pair.getLeft().isItemEqual(stack))
+				{
+					EntityLivingBase entity = event.getEntityLiving();
+					IFatigue props = entity.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+					if (props != null)
+					{
+						props.setFatigue(props.getFatigue() - pair.getRight());
+						props.maxFatigueCounter();
+					}
 				}
 			}
 		}

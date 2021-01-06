@@ -4,6 +4,7 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
@@ -67,7 +68,8 @@ public class Somnia
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 		CapabilityFatigue.register();
-	}
+		CompatModule.registerCoffees();
+ 	}
 	
 	@EventHandler
 	public void onServerStarting(FMLServerStartingEvent event)
