@@ -5,11 +5,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.Loader;
 
 public class InvUtil {
     public static boolean hasItem(EntityPlayer player, ResourceLocation registryName) {
-        if (Loader.isModLoaded("baubles") && BaublesPlugin.checkBauble(player, registryName)) return true;
+        if (BaublesPlugin.checkBauble(player, registryName)) return true;
 
         for (EntityEquipmentSlot slot : EntityEquipmentSlot.values()) {
             ItemStack stack = player.getItemStackFromSlot(slot);

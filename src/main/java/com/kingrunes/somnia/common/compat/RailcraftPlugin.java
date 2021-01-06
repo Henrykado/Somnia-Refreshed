@@ -1,7 +1,11 @@
 package com.kingrunes.somnia.common.compat;
 
+import mods.railcraft.common.util.network.PacketBuilder;
+import mods.railcraft.common.util.network.PacketKeyPress;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
+
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class RailcraftPlugin {
@@ -34,11 +38,11 @@ public class RailcraftPlugin {
     }
 
     public static void sleepInBedCart() {
-        try {
-            SEND_KEY_PACKET_METHOD.invoke(INSTANCE_METHOD.invoke(null), CART_BED_SLEEP_FIELD.get(null));
-        }
-        catch(InvocationTargetException | IllegalAccessException | NullPointerException ignore) {
+        if (Loader.isModLoaded("railcraft")) doSleepInBedCart();
+    }
 
-        }
+    @Optional.Method(modid = "railcraft")
+    private static void doSleepInBedCart() {
+        PacketBuilder.instance().sendKeyPressPacket(PacketKeyPress.EnumKeyBinding.BED_CART_SLEEP);
     }
 }
