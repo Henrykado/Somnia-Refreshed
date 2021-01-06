@@ -128,6 +128,9 @@ public class ForgeEventHandler
 		EntityPlayer player = event.getEntityPlayer();
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
+			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
+				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
+			}
 			props.maxFatigueCounter();
 			props.setResetSpawn(true);
 			props.setSleepNormally(false);
@@ -140,8 +143,9 @@ public class ForgeEventHandler
 	/**
 	 * Re-implementation of the sleep method.
 	 */
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onSleep(PlayerSleepInBedEvent event) {
+		if (event.getResultStatus() == EntityPlayer.SleepResult.OTHER_PROBLEM) return;
 		EntityPlayer player = event.getEntityPlayer();
 		BlockPos pos = event.getPos();
 		final IBlockState state = player.world.isBlockLoaded(pos) ? player.world.getBlockState(pos) : null;
@@ -206,10 +210,7 @@ public class ForgeEventHandler
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
 			if (sleepCharm) {
-				long worldTime = player.world.getTotalWorldTime();
-				long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
-				double fatigueToReplenish = SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
-				props.setFatigue(props.getFatigue() - fatigueToReplenish);
+				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
 			else if (sleepNormally) {
 				props.setSleepNormally(true);

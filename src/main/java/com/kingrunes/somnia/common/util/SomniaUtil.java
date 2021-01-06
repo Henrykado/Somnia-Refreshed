@@ -138,4 +138,11 @@ public class SomniaUtil {
                 serverTickHandler.tickStart();
         }
     }
+
+    public static double calculateFatigueToReplenish(EntityPlayer player)
+    {
+        long worldTime = player.world.getTotalWorldTime();
+        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
+        return SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
+    }
 }
