@@ -82,7 +82,7 @@ public class GuiSelectWakeTime extends GuiScreen
 		if (pos != null) { //pos is nullable!!!
 			Somnia.eventChannel.sendToServer(PacketHandler.buildRightClickBlockPacket(mouseOver.getBlockPos(), mouseOver.sideHit, (float) mouseOver.hitVec.x, (float) mouseOver.hitVec.y, (float) mouseOver.hitVec.z));
 		}
-		else if (mouseOver.entityHit != null && mouseOver.entityHit.getClass() == RailcraftPlugin.BED_CART_CLASS) {
+		else if (mouseOver.entityHit != null && RailcraftPlugin.isBedCart(mouseOver.entityHit)) {
 			Somnia.eventChannel.sendToServer(PacketHandler.buildRideEntityPacket(mouseOver.entityHit));
 			RailcraftPlugin.sleepInBedCart();
 		}

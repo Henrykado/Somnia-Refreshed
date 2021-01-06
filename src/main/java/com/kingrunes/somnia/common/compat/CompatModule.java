@@ -23,7 +23,7 @@ public class CompatModule {
      */
     public static boolean isPlayerInBed(EntityPlayer player, BlockPos pos) {
         Entity riding = player.getRidingEntity();
-        if (riding != null && riding.getClass() == RailcraftPlugin.BED_CART_CLASS) return true;
+        if (riding != null && RailcraftPlugin.isBedCart(riding)) return true;
 
         if (pos == null) return false;
         IBlockState state = player.world.getBlockState(pos);
