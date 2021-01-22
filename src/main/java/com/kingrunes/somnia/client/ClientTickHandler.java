@@ -272,14 +272,14 @@ public class ClientTickHandler
 			renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
 
 			// ETA
-			double total = 0.0d;
-			Double[] values = speedValues.stream().filter(Objects::nonNull).toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
-			for (double value : values)
-				total += value;
-			double avg = total / values.length;
-			int etaTotalSeconds = (int)((diff-rel) / (avg*20)); // remaining ticks / (average multiplier * standard tick rate)
+			double average = speedValues.stream()
+					.filter(Objects::nonNull)
+					.mapToDouble(Double::doubleValue)
+					.summaryStatistics()
+					.getAverage();
+			long etaTotalSeconds = Math.round((diff - rel) / (average * 20));
 
-			int etaSeconds = etaTotalSeconds % 60,
+			long etaSeconds = etaTotalSeconds % 60,
 					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
 
 			renderScaledString(x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
