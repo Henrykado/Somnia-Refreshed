@@ -21,7 +21,7 @@ public class CompatModule {
     /**
      * Check if the world should be simulated in this bed
      */
-    public static boolean isPlayerInBed(EntityPlayer player, BlockPos pos) {
+    public static boolean checkBed(EntityPlayer player, BlockPos pos) {
         Entity riding = player.getRidingEntity();
         if (riding != null && RailcraftPlugin.isBedCart(riding)) return true;
 

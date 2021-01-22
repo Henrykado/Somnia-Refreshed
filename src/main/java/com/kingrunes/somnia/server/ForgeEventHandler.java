@@ -293,7 +293,7 @@ public class ForgeEventHandler
 
 		EntityPlayer player = event.getEntityPlayer();
 
-		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.isPlayerInBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && RailcraftPlugin.isBedCart(((PlayerInteractEvent.EntityInteractSpecific)event).getTarget()))) {
+		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.checkBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && RailcraftPlugin.isBedCart(((PlayerInteractEvent.EntityInteractSpecific)event).getTarget()))) {
 			if (player.bedInRange(pos, null)) //the facing can be null
 			{
 				ItemStack currentItem = player.inventory.getCurrentItem();
