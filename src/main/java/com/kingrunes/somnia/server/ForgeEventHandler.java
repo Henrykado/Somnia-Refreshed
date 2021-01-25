@@ -37,6 +37,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -66,7 +67,7 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
-		if (event.phase != Phase.START || event.player.world.isRemote || ((event.player.capabilities.isCreativeMode || event.player.isSpectator()) && !event.player.isPlayerSleeping())) return;
+		if (event.phase != Phase.START || event.player.world.isRemote || (!event.player.isEntityAlive() || event.player.isCreative() || event.player.isSpectator()) && !event.player.isPlayerSleeping()) return;
 		
 		EntityPlayer player = event.player;
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
@@ -344,6 +345,12 @@ public class ForgeEventHandler
 
 			Somnia.eventChannel.sendTo(PacketHandler.buildWakePacket(), (EntityPlayerMP) event.getEntityLiving());
 		}
+	}
+
+	@SubscribeEvent
+	public void onLivingDeath(LivingDeathEvent event) {
+		IFatigue props = event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null) props.setFatigue(0);
 	}
 
 	@SubscribeEvent
