@@ -272,7 +272,8 @@ public class ClientTickHandler
 			renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
 
 			// ETA
-			double average = speedValues.stream()
+			double average = new ArrayList<>(speedValues)
+					.stream()
 					.filter(Objects::nonNull)
 					.mapToDouble(Double::doubleValue)
 					.summaryStatistics()
