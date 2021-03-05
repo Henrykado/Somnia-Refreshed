@@ -213,7 +213,7 @@ public class ForgeEventHandler
 			if (sleepCharm) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
-			else if (sleepNormally) {
+			else if (sleepNormally || !CompatModule.checkBed(player, pos)) {
 				props.setSleepNormally(true);
 			}
 		}

@@ -42,8 +42,8 @@ repositories {
 dependencies {
     deobfCompile "curse.maven:railcraft-51195:2687757"
 
-    //compile "com.azanor:Baubles:${VERSION_BAUBLES}" Temporarily disabled until ModMaven is back up
-    deobfCompile "curse.maven:baubles-227083:2518667"
+    deobfCompile "com.azanor:Baubles:${VERSION_BAUBLES}"
+    //deobfCompile "curse.maven:cyclic-239286:3089348"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

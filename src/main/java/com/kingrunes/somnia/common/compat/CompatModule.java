@@ -17,6 +17,7 @@ public class CompatModule {
     public static final ResourceLocation CHARM_SLEEP = new ResourceLocation("darkutils", "charm_sleep");
     public static final ResourceLocation CRYO_CHAMBER = new ResourceLocation("galacticraftplanets", "mars_machine");
     public static final ResourceLocation SLEEPING_BAG = new ResourceLocation("openblocks", "sleeping_bag");
+    public static final ResourceLocation SLEEPING_MAT = new ResourceLocation("openblocks", "sleeping_mat");
 
     /**
      * Check if the world should be simulated in this bed
@@ -33,7 +34,12 @@ public class CompatModule {
 
         ItemStack chest = player.inventory.armorInventory.get(2);
         ItemStack currentStack = player.inventory.getCurrentItem();
-        if ((!chest.isEmpty() && chest.getItem().getRegistryName().equals(SLEEPING_BAG)) || (!currentStack.isEmpty() && currentStack.getItem().getRegistryName().equals(SLEEPING_BAG))) return true;
+        if (!currentStack.isEmpty()) {
+            ResourceLocation regName = currentStack.getItem().getRegistryName();
+            if (regName.equals(SLEEPING_BAG)) return true;
+            else if (regName.equals(SLEEPING_MAT)) return false;
+        }
+        if ((!chest.isEmpty() && chest.getItem().getRegistryName().equals(SLEEPING_BAG))) return true;
 
         return block.isBed(state, player.world, pos, player);
     }
