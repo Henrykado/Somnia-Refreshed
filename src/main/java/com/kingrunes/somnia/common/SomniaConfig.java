@@ -15,10 +15,6 @@ public class SomniaConfig {
     @Config.LangKey("somnia.config.fatigue")
     public static final Fatigue FATIGUE = new Fatigue();
 
-    @Config.Comment("Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)")
-    @Config.LangKey("somnia.config.sideEffects")
-    public static final SideEffects SIDE_EFFECTS = new SideEffects();
-
     @Config.LangKey("somnia.config.logic")
     public static final Logic LOGIC = new Logic();
 
@@ -53,11 +49,10 @@ public class SomniaConfig {
 
         @Config.Comment("The required amount of fatigue to sleep")
         public double minimumFatigueToSleep = 20;
-    }
 
-    public static class SideEffects {
         @Config.RequiresMcRestart
-        public String[] stages = new String[] {
+        @Config.Comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
+        public String[] sideEffectStages = new String[] {
                 "70, 80, 9, 150, 0",
                 "80, 90, 2, 300, 2",
                 "90, 95, 19, 200, 1",

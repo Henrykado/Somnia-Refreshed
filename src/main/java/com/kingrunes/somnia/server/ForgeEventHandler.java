@@ -110,7 +110,7 @@ public class ForgeEventHandler
 					}
 				}
 
-				for (int i = 0; i < SomniaConfig.SIDE_EFFECTS.stages.length; i++)
+				for (int i = 0; i < SomniaConfig.FATIGUE.sideEffectStages.length; i++)
 				{
 					SideEffectStage stage = stages[i];
 					boolean permanent = stage.duration < 0;
