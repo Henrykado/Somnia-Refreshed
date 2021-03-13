@@ -6,6 +6,7 @@ import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.StreamUtils;
+import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
@@ -22,6 +23,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import scala.Int;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -172,7 +174,7 @@ public class ClientTickHandler
 
 			String str;
 			IFatigue props = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-			if (SomniaConfig.FATIGUE.simpleFatigueDisplay && props != null) str = WHITE + SomniaUtil.translate("somnia.side_effect."+getSideEffectStage(ClientProxy.playerFatigue));
+			if (SomniaConfig.FATIGUE.simpleFatigueDisplay && props != null) str = WHITE + SideEffectStage.getSideEffectStageDescription(ClientProxy.playerFatigue);
 			else str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
 
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
@@ -213,14 +215,6 @@ public class ClientTickHandler
 			this.startTicks = -1;
 			this.speed = 0;
 		}
-	}
-
-	private int getSideEffectStage(double fatigue) {
-		if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage1) return 0;
-		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage2) return 1;
-		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage3) return 2;
-		else if (fatigue < SomniaConfig.SIDE_EFFECTS.sideEffectStage4) return 3;
-		else return 4;
 	}
 
 	private void renderSleepGui(ScaledResolution scaledResolution) {

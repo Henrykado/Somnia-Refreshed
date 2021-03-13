@@ -56,40 +56,13 @@ public class SomniaConfig {
     }
 
     public static class SideEffects {
-
-        @Config.Comment("Amount of fatigue required to enter the first side effect stage")
-        public int sideEffectStage1 = 70;
-        @Config.Comment("Potion effect ID of the first stage")
-        public int sideEffectStage1Potion = 9;
-        @Config.Comment("Effect duration of the first stage")
-        public int sideEffectStage1Duration = 150;
-        @Config.Comment("Potion effect amplifier of the first stage")
-        public int sideEffectStage1Amplifier = 0;
-
-        @Config.Comment("Amount of fatigue required to enter the second side effect stage")
-        public int sideEffectStage2 = 80;
-        @Config.Comment("Potion effect ID of the second stage")
-        public int sideEffectStage2Potion = 2;
-        @Config.Comment("Effect duration of the second stage")
-        public int sideEffectStage2Duration = 300;
-        @Config.Comment("Potion effect amplifier of the second stage")
-        public int sideEffectStage2Amplifier = 2;
-
-        @Config.Comment("Amount of fatigue required to enter the third side effect stage")
-        public int sideEffectStage3 = 90;
-        @Config.Comment("Potion effect ID of the third stage")
-        public int sideEffectStage3Potion = 19;
-        @Config.Comment("Effect duration of the third stage")
-        public int sideEffectStage3Duration = 200;
-        @Config.Comment("Potion effect amplifier of the third stage")
-        public int sideEffectStage3Amplifier = 1;
-
-        @Config.Comment("Amount of fatigue required to enter the fourth side effect stage")
-        public int sideEffectStage4 = 95;
-        @Config.Comment("Potion effect ID of the fourth stage")
-        public int sideEffectStage4Potion = 2;
-        @Config.Comment("Potion effect amplifier of the fourth stage")
-        public int sideEffectStage4Amplifier = 3;
+        @Config.RequiresMcRestart
+        public String[] stages = new String[] {
+                "70, 80, 9, 150, 0",
+                "80, 90, 2, 300, 2",
+                "90, 95, 19, 200, 1",
+                "95, 100, 2, -1, 3"
+        };
     }
 
     public static class Logic {
