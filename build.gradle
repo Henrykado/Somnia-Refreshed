@@ -10,8 +10,8 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-
-version = VERSION_MAJOR+"."+VERSION_MINOR+(Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "")
+def VERSION_PRE_RELEASE = !VERSION_PRE_RELEASE.isEmpty() ? "-" + VERSION_PRE_RELEASE : ""
+version = VERSION_MAJOR+"."+VERSION_MINOR+(Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "")+VERSION_PRE_RELEASE
 group = "com.kingrunes.somnia" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "somnia"
 
