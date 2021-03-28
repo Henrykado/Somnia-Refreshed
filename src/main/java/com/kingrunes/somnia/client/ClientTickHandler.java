@@ -7,7 +7,6 @@ import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.StreamUtils;
 import com.kingrunes.somnia.common.util.SideEffectStage;
-import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -23,7 +22,6 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import scala.Int;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -280,7 +278,7 @@ public class ClientTickHandler
 			renderScaledString(x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 
 			// Clock
-			renderClock(maxWidth - 40, 30, 4.0f);
+			renderClock(maxWidth);
 		}
 	}
 
@@ -316,12 +314,26 @@ public class ClientTickHandler
 		glPopMatrix();
 	}
 
-	private void renderClock(int x, int y, float scale)
+	private void renderClock(int maxWidth)
 	{
+		int x;
+		switch (SomniaConfig.OPTIONS.somniaGuiClockPosition)
+		{
+			case "left":
+				x = 40;
+				break;
+			case "center":
+				x = maxWidth / 2;
+				break;
+			default:
+			case "right":
+				x = maxWidth - 40;
+				break;
+		}
 		glPushMatrix();
 		{
-			glTranslatef(x, y, 0.0f);
-			glScalef(scale, scale, 1.0f);
+			glTranslatef(x, 35, 0);
+			glScalef(4F, 4F, 1);
 			mc.getRenderItem().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
 		}
 		glPopMatrix();

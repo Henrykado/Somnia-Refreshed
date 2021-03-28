@@ -73,16 +73,25 @@ public class SomniaConfig {
     public static class Options {
         @Config.Comment("Slightly slower sleep end")
         public boolean fading = true;
+
         @Config.Comment("Let the player sleep even when there are monsters nearby")
         public boolean ignoreMonsters = false;
+
         @Config.Comment("Deafens you while you're asleep. Mob sounds are confusing with the world sped up")
         public boolean muteSoundWhenSleeping = false;
+
         @Config.Comment("Allows you to sleep with armor equipped")
         public boolean sleepWithArmor = false;
+
         @Config.Comment("Provides an enhances sleeping gui")
         public boolean somniaGui = true;
+
+        @Config.Comment("The display position of the clock in somnia's enhanced sleeping gui. Accepted values: left, center, right")
+        public String somniaGuiClockPosition = "right";
+
         @Config.Comment("Applies a very small FOV while sleeping, because a vanilla bug makes you face in a wrong direction when your bed doesn't face north")
         public boolean vanillaBugFixes = true;
+
         @Config.Comment("Item used to select wake time")
         public String wakeTimeSelectItem = "minecraft:clock";
     }
