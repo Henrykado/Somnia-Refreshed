@@ -7,9 +7,9 @@ import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.Loader;
@@ -111,7 +111,7 @@ public class SomniaUtil {
     }
 
     public static String translate(String key) {
-        return I18n.translateToLocal(key);
+        return I18n.format(key);
     }
 
     @SuppressWarnings("unused")

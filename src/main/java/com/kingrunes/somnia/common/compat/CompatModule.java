@@ -44,39 +44,6 @@ public class CompatModule {
         return block.isBed(state, player.world, pos, player);
     }
 
-    public static void registerCoffees()
-    {
-        Somnia.logger.info("Adding support for various coffees from other mods");
-        if (Loader.isModLoaded("coffeespawner"))
-        {
-            SomniaAPI.addCoffee(getModItem("coffeespawner", "coffee"), 10);
-            SomniaAPI.addCoffee(getModItem("coffeespawner", "coffee_milk"), 10);
-            SomniaAPI.addCoffee(getModItem("coffeespawner", "coffee_sugar"), 15);
-            SomniaAPI.addCoffee(getModItem("coffeespawner", "coffee_milk_sugar"), 15);
-        }
-        if (Loader.isModLoaded("harvestcraft"))
-        {
-            SomniaAPI.addCoffee(getModItem("harvestcraft", "coffeeitem"), 5);
-            SomniaAPI.addCoffee(getModItem("harvestcraft", "coffeeconlecheitem"), 15);
-            SomniaAPI.addCoffee(getModItem("harvestcraft", "espressoitem"), 15);
-        }
-        if (Loader.isModLoaded("coffeework"))
-        {
-            SomniaAPI.addCoffee(getModItem("coffeework", "coffee_instant"), 10);
-            SomniaAPI.addCoffee(getModItem("coffeework", "coffee_instant_cup"), 10);
-            SomniaAPI.addCoffee(getModItem("coffeework", "espresso"), 15);
-        }
-        if (Loader.isModLoaded("ic2")) {
-            SomniaAPI.addCoffee(getModItem("ic2", "mug", 1), 5);
-            SomniaAPI.addCoffee(getModItem("ic2", "mug", 2), 15);
-            SomniaAPI.addCoffee(getModItem("ic2", "mug", 3), 10);
-        }
-        if (Loader.isModLoaded("actuallyadditions"))
-        {
-            SomniaAPI.addCoffee(getModItem("actuallyadditions", "item_coffee"), 10);
-        }
-    }
-
     public static ItemStack getModItem(String modid, String name)
     {
         return getModItem(modid, name, 0);

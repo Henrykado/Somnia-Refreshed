@@ -5,7 +5,7 @@ import com.kingrunes.somnia.common.SomniaConfig;
 import java.util.Arrays;
 
 public class SideEffectStage {
-    private static SideEffectStage[] stages;
+    public static SideEffectStage[] stages;
 
     public final int minFatigue;
     public final int maxFatigue;
@@ -22,18 +22,13 @@ public class SideEffectStage {
         this.amplifier = amplifier;
     }
 
-    public static SideEffectStage[] getSideEffectStages()
+    public static void registerSideEffectStages()
     {
-        if (stages == null)
+        stages = new SideEffectStage[SomniaConfig.FATIGUE.sideEffectStages.length];
+        for (int i = 0; i < stages.length; i++)
         {
-            stages = new SideEffectStage[SomniaConfig.FATIGUE.sideEffectStages.length];
-            for (int i = 0; i < stages.length; i++)
-            {
-                stages[i] = parseStage(SomniaConfig.FATIGUE.sideEffectStages[i]);
-            }
+            stages[i] = parseStage(SomniaConfig.FATIGUE.sideEffectStages[i]);
         }
-
-        return stages;
     }
 
     private static SideEffectStage parseStage(String stage)
@@ -57,7 +52,7 @@ public class SideEffectStage {
     {
         for (int i = 0; i < SomniaConfig.FATIGUE.sideEffectStages.length; i++)
         {
-            SideEffectStage stage = SideEffectStage.getSideEffectStages()[i];
+            SideEffectStage stage = stages[i];
             if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (!(stage.duration < 0) || i == SomniaConfig.FATIGUE.sideEffectStages.length - 1)) return i + 1;
         }
 

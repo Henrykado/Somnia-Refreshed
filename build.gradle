@@ -40,6 +40,10 @@ minecraft {
 
 repositories {
     maven {
+        name = "ic2"
+        url = "http://maven.ic2.player.to/"
+    }
+    maven {
         name = "CurseMaven"
         url = "https://www.cursemaven.com"
     }
@@ -53,6 +57,8 @@ dependencies {
 
     deobfCompile "com.azanor:Baubles:${VERSION_BAUBLES}"
     //deobfCompile "curse.maven:cyclic-239286:3089348"
+    //deobfCompile "curse.maven:coffee-spawner-257588:2515688"
+    //compile "net.industrial-craft:industrialcraft-2:2.8.221-ex112:dev"
 }
 
 jar {

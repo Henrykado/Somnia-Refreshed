@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SomniaAPI {
-    private static final List<Pair<ItemStack, Double>> COFFEES = new ArrayList<>();
+    private static final List<Pair<ItemStack, Double>> REPLENISHING_ITEMS = new ArrayList<>();
 
-    public static void addCoffee(ItemStack stack, double fatigueToReplenish) {
-        COFFEES.add(Pair.of(stack, fatigueToReplenish));
+    public static void addReplenishingItem(ItemStack stack, double fatigueToReplenish) {
+        REPLENISHING_ITEMS.add(Pair.of(stack, fatigueToReplenish));
     }
 
-    public static List<Pair<ItemStack, Double>> getCoffeeList() {
-        return new ArrayList<>(COFFEES);
+    public static List<Pair<ItemStack, Double>> getReplenishingItems() {
+        return new ArrayList<>(REPLENISHING_ITEMS);
     }
 }

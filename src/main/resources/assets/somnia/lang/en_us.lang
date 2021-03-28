@@ -1,5 +1,7 @@
 somnia.config.title=Somnia Config
 somnia.config.fatigue=Fatigue
+somnia.config.fatigue.replenishing_items=Replenishing Items
+somnia.config.fatigue.side_effect_stages=Side Effect Stages
 somnia.config.sideEffects=Side effects
 somnia.config.sideEffects.tooltip=Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)
 somnia.config.logic=Logic

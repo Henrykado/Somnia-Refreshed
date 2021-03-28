@@ -1,11 +1,16 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.api.SomniaAPI;
+import com.kingrunes.somnia.common.compat.CompatModule;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.util.Arrays;
 
 @Config(modid = Somnia.MOD_ID, category = "")
 @Config.LangKey("somnia.config.title")
@@ -51,12 +56,33 @@ public class SomniaConfig {
         public double minimumFatigueToSleep = 20;
 
         @Config.RequiresMcRestart
+        @Config.LangKey("somnia.config.fatigue.side_effect_stages")
         @Config.Comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
         public String[] sideEffectStages = new String[] {
                 "70, 80, 9, 150, 0",
                 "80, 90, 2, 300, 2",
                 "90, 95, 19, 200, 1",
                 "95, 100, 2, -1, 3"
+        };
+
+        @Config.RequiresMcRestart
+        @Config.LangKey("somnia.config.fatigue.replenishing_items")
+        @Config.Comment("Definitions of fatigue replenishing items. Each list consist of an item registry name (and optionally metadata), and the amount of fatigue it replenishes. For example fancy_mod:fancy_item or fancy_mod:meta_item@5")
+        public String[] replenishingItems = new String[] {
+                "coffeespawner:coffee, 10",
+                "coffeespawner:coffee_milk, 10",
+                "coffeespawner:coffee_sugar, 15",
+                "coffeespawner:coffee_milk_sugar, 15",
+                "harvestcraft:coffeeitem, 5",
+                "harvestcraft:coffeeconlecheitem, 15",
+                "harvestcraft:espressoitem, 15",
+                "coffeework:coffee_instant, 10",
+                "coffeework:coffee_instant_cup, 10",
+                "coffeework:espresso, 15",
+                "ic2:mug@1, 5",
+                "ic2:mug@2, 15",
+                "ic2:mug@3, 10",
+                "actuallyadditions:item_coffee, 10",
         };
     }
 
@@ -96,12 +122,6 @@ public class SomniaConfig {
         public String wakeTimeSelectItem = "minecraft:clock";
     }
 
-    /*public static class Profiling { Profiling might come later
-        public int secondOnGraph = 30;
-
-        public boolean tpsGraph = false;
-    }*/
-
     public static class Performance {
         @Config.Comment("Disables mob spawning while you sleep")
         public boolean disableCreatureSpawning = false;
@@ -128,5 +148,18 @@ public class SomniaConfig {
         if (event.getModID().equals(Somnia.MOD_ID)) {
             ConfigManager.sync(Somnia.MOD_ID, Config.Type.INSTANCE);
         }
+    }
+
+    public static void registerReplenishingItems() {
+        Arrays.stream(FATIGUE.replenishingItems)
+                .forEach(str -> {
+                    String[] parts = str.replace(" ", "").split(",");
+                    String[] regName = parts[0].split(":");
+                    String modid = regName[0];
+                    String itemName = regName[1].contains("@") ? regName[1].split("@")[0] : regName[1];
+                    int meta = regName[1].contains("@") ? Integer.parseInt(regName[1].split("@")[1]) : 0;
+                    ItemStack stack = CompatModule.getModItem(modid, itemName, meta);
+                    if (!stack.isEmpty()) SomniaAPI.addReplenishingItem(stack, Double.parseDouble(parts[1]));
+                });
     }
 }

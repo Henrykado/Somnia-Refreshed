@@ -98,12 +98,11 @@ public class ForgeEventHandler
 			if (SomniaConfig.FATIGUE.fatigueSideEffects)
 			{
 				int lastSideEffectStage = props.getSideEffectStage();
-				SideEffectStage[] stages = SideEffectStage.getSideEffectStages();
-				SideEffectStage firstStage = stages[0];
+				SideEffectStage firstStage = SideEffectStage.stages[0];
 				if (fatigue < firstStage.minFatigue)
 				{
 					props.setSideEffectStage(-1);
-					for (SideEffectStage stage : stages)
+					for (SideEffectStage stage : SideEffectStage.stages)
 					{
 						if (lastSideEffectStage < stage.minFatigue)
 							player.removePotionEffect(Potion.getPotionById(stage.potionID));
@@ -112,7 +111,7 @@ public class ForgeEventHandler
 
 				for (int i = 0; i < SomniaConfig.FATIGUE.sideEffectStages.length; i++)
 				{
-					SideEffectStage stage = stages[i];
+					SideEffectStage stage = SideEffectStage.stages[i];
 					boolean permanent = stage.duration < 0;
 					if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (permanent || lastSideEffectStage < stage.minFatigue))
 					{
@@ -319,7 +318,7 @@ public class ForgeEventHandler
 		ItemStack stack = event.getItem();
 		if (stack.getItemUseAction() == EnumAction.DRINK)
 		{
-			for (Pair<ItemStack, Double> pair : SomniaAPI.getCoffeeList())
+			for (Pair<ItemStack, Double> pair : SomniaAPI.getReplenishingItems())
 			{
 				if (pair.getLeft().isItemEqual(stack))
 				{
