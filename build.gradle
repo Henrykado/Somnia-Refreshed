@@ -1,19 +1,28 @@
+import com.modrinth.minotaur.TaskModrinthUpload
+
 buildscript {
     repositories {
         jcenter()
+        gradlePluginPortal()
         maven { url = "https://files.minecraftforge.net/maven" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
+        classpath 'gradle.plugin.com.modrinth.minotaur:Minotaur:1.1.0'
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.matthewprenger.cursegradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-def VERSION_PRE_RELEASE = !VERSION_PRE_RELEASE.isEmpty() ? "-" + VERSION_PRE_RELEASE : ""
-version = VERSION_MAJOR+"."+VERSION_MINOR+(Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "")+VERSION_PRE_RELEASE
-group = "com.kingrunes.somnia" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+String versionClassifier = !VERSION_CLASSIFIER.isEmpty() ? "-" + VERSION_CLASSIFIER : ""
+String releaseClassifier = !VERSION_CLASSIFIER.isEmpty() ? VERSION_CLASSIFIER : "release"
+version = VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH != "0" ? "."+VERSION_PATCH : "") + versionClassifier
+group = "com.kingrunes.somnia"
 archivesBaseName = "somnia"
+
+String versionRaw = version.toString().split("-")[0]
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -24,7 +33,7 @@ minecraft {
     version = "1.12.2-14.23.5.2847"
     runDir = "run"
 
-    clientJvmArgs = ["-Dfml.coreMods.load=" + coremodPath]
+    clientJvmArgs = ["-Dfml.coreMods.load=" + COREMOD_PATH]
 
     mappings = "snapshot_20171003"
 }
@@ -46,7 +55,6 @@ dependencies {
     //deobfCompile "curse.maven:cyclic-239286:3089348"
 }
 
-// Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([
@@ -58,7 +66,7 @@ jar {
                 "Implementation-Vendor" :"kingrunes",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
-        attributes 'FMLCorePlugin': coremodPath, 'FMLCorePluginContainsFMLMod': 'true'
+        attributes 'FMLCorePlugin': COREMOD_PATH, 'FMLCorePluginContainsFMLMod': 'true'
         attributes 'FMLAT': 'somnia_at.cfg'
     }
 }
@@ -80,4 +88,52 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+def getVersionDisplayName() {
+    def name = "Somnia"
+    String classifier
+    if (!VERSION_CLASSIFIER.isEmpty()) {
+        String classifierName = VERSION_CLASSIFIER
+        String firstLetter = classifierName.substring(0, 1)
+        String remainingLetters = classifierName.substring(1, classifierName.length())
+        firstLetter = firstLetter.toUpperCase()
+        String[] parts = classifierName.split(".")
+        classifier = firstLetter + remainingLetters + (parts.length > 1 ? " ${parts[1]}" : "")
+    } else classifier = ""
+
+    return "$name ${version.toString().split("-")[0]} $classifier"
+}
+
+curseforge {
+    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN") as String ?: "DUMMY"
+    project {
+        id = CURSEFORGE_ID
+        changelogType = "markdown"
+        changelog = System.getenv("CHANGELOG") ?: ""
+        releaseType = releaseClassifier
+        mainArtifact(tasks.getByName("jar"), {
+            displayName = getVersionDisplayName()
+            relations {
+                optionalDependency("openblocks")
+                optionalDependency("cyclic")
+                optionalDependency("dark-utilities")
+                optionalDependency("railcraft")
+            }
+        })
+        addGameVersion("Forge")
+        addGameVersion(VERSION_MC)
+    }
+}
+
+task publishModrinth(type: TaskModrinthUpload) {
+    token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String ?: "DUMMY"
+    projectId = "BiSrUr8O"
+    versionName = getVersionDisplayName()
+    versionNumber = versionRaw
+    uploadFile = tasks.getByName("jar")
+    addLoader("forge")
+    releaseType = releaseClassifier
+    changelog = System.getenv("CHANGELOG")
+    addGameVersion(VERSION_MC)
 }
