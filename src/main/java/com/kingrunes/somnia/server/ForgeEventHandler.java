@@ -51,6 +51,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
@@ -320,7 +321,7 @@ public class ForgeEventHandler
 		{
 			for (Pair<ItemStack, Double> pair : SomniaAPI.getReplenishingItems())
 			{
-				if (pair.getLeft().isItemEqual(stack))
+				if (OreDictionary.itemMatches(stack, pair.getLeft(), false))
 				{
 					EntityLivingBase entity = event.getEntityLiving();
 					IFatigue props = entity.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
