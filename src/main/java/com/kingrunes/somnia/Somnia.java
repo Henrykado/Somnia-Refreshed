@@ -4,6 +4,7 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.TimePeriod;
@@ -12,6 +13,10 @@ import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;
 import com.kingrunes.somnia.setup.IProxy;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
+import net.minecraft.init.PotionTypes;
+import net.minecraft.potion.PotionHelper;
+import net.minecraft.potion.PotionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -53,6 +58,9 @@ public class Somnia
 	{
 		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
+
+		forgeEventHandler = new ForgeEventHandler();
+		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 	}
 	
 	@EventHandler
@@ -61,13 +69,14 @@ public class Somnia
 		logger.info("------ Init -----");
 		eventChannel = NetworkRegistry.INSTANCE.newEventDrivenChannel(MOD_ID);
 		eventChannel.register(new PacketHandler());
-
 		proxy.register();
+
+		PotionHelper.addMix(PotionTypes.NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.awakeningPotionType);
+		PotionHelper.addMix(PotionTypes.LONG_NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.longAwakeningPotionType);
+		PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.BLAZE_POWDER, SomniaPotions.strongAwakeningPotionType);
 
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
 
-		forgeEventHandler = new ForgeEventHandler();
-		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 		CapabilityFatigue.register();
 		SideEffectStage.registerSideEffectStages();
 		SomniaConfig.registerReplenishingItems();

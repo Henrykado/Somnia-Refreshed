@@ -9,8 +9,10 @@ import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
+import com.kingrunes.somnia.common.potion.PotionAwakening;
 import com.kingrunes.somnia.common.util.InvUtil;
 import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.SomniaUtil;
@@ -28,6 +30,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.potion.PotionType;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -38,6 +41,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -51,8 +55,8 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Iterator;
@@ -64,6 +68,20 @@ public class ForgeEventHandler
 	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
 	{
 		event.addCapability(new ResourceLocation(Somnia.MOD_ID, "fatigue"), new FatigueCapabilityProvider());
+	}
+
+	@SubscribeEvent
+	public void onPotionRegister(RegistryEvent.Register<Potion> event)
+	{
+		event.getRegistry().register(SomniaPotions.awakeningPotion = new PotionAwakening());
+	}
+
+	@SubscribeEvent
+	public void onEffectRegister(RegistryEvent.Register<PotionType> event)
+	{
+		event.getRegistry().register(SomniaPotions.awakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400)).setRegistryName("awakening"));
+		event.getRegistry().register(SomniaPotions.longAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 3600)).setRegistryName("long_awakening"));
+		event.getRegistry().register(SomniaPotions.strongAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400, 1)).setRegistryName("strong_awakening"));
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -88,8 +106,16 @@ public class ForgeEventHandler
 			extraFatigueRate -= SomniaConfig.FATIGUE.fatigueReplenishRate / share / replenishedFatigue / 10;
 			replenishedFatigue -= replenish;
 		}
-		else
-			fatigue += SomniaConfig.FATIGUE.fatigueRate + props.getExtraFatigueRate();
+		else {
+			double rate = SomniaConfig.FATIGUE.fatigueRate;
+			PotionEffect wakefulness = player.getActivePotionEffect(SomniaPotions.awakeningPotion);
+			if (wakefulness != null)
+			{
+				int amplifier = wakefulness.getAmplifier();
+				rate -= amplifier == 0 ? rate / 4 : rate / 3;
+			}
+			fatigue += rate + props.getExtraFatigueRate();
+		}
 		
 		if (fatigue > 100.0d)
 			fatigue = 100.0d;

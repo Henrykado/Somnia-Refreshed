@@ -21,3 +21,9 @@ somnia.side_effect.1=Tired
 somnia.side_effect.2=Exhausted
 somnia.side_effect.3=Sleep Deprived
 somnia.side_effect.4=Fading
+
+somnia.effect.awakening=Wakefulness
+potion.effect.awakening=Wakefulness Potion
+splash_potion.effect.awakening=Splash Potion of Wakefulness
+tipped_arrow.effect.awakening=Arrow of Wakefulness
+lingering_potion.effect.awakening=Lingering Potion of Wakefulness
