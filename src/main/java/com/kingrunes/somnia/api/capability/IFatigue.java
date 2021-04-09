@@ -25,4 +25,12 @@ public interface IFatigue extends INBTSerializable<NBTTagCompound> {
     void setSleepNormally(boolean sleepNormally);
 
     boolean shouldSleepNormally();
+
+    double getExtraFatigueRate();
+
+    void setExtraFatigueRate(double rate);
+
+    double getReplenishedFatigue();
+
+    void setReplenishedFatigue(double replenishedFatigue);
 }

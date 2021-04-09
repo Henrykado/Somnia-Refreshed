@@ -67,7 +67,7 @@ public class SomniaConfig {
 
         @Config.RequiresMcRestart
         @Config.LangKey("somnia.config.fatigue.replenishing_items")
-        @Config.Comment("Definitions of fatigue replenishing items. Each list consist of an item registry name (and optionally metadata), and the amount of fatigue it replenishes. For example fancy_mod:fancy_item or fancy_mod:meta_item@5")
+        @Config.Comment("Definitions of fatigue replenishing items. Each list consist of an item registry name (and optionally metadata), the amount of fatigue it replenishes, and optionally a fatigue rate modifier. Example registry names: 'fancy_mod:fancy_item' or 'fancy_mod:meta_item@5'")
         public String[] replenishingItems = new String[] {
                 "coffeespawner:coffee, 10",
                 "coffeespawner:coffee_milk, 10",
@@ -159,7 +159,7 @@ public class SomniaConfig {
                     String itemName = regName[1].contains("@") ? regName[1].split("@")[0] : regName[1];
                     int meta = regName[1].contains("@") ? Integer.parseInt(regName[1].split("@")[1]) : 0;
                     ItemStack stack = CompatModule.getModItem(modid, itemName, meta);
-                    if (!stack.isEmpty()) SomniaAPI.addReplenishingItem(stack, Double.parseDouble(parts[1]));
+                    if (!stack.isEmpty()) SomniaAPI.addReplenishingItem(stack, Double.parseDouble(parts[1]), parts.length > 2 ? Double.parseDouble(parts[2]) : FATIGUE.fatigueRate);
                 });
     }
 }

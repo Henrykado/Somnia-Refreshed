@@ -53,6 +53,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Iterator;
 import java.util.List;
@@ -75,22 +76,39 @@ public class ForgeEventHandler
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
 
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		double extraFatigueRate = props.getExtraFatigueRate();
+		double replenishedFatigue = props.getReplenishedFatigue();
 		double fatigue = props.getFatigue();
-		
 		boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isPlayerSleeping();
 		
-		if (isSleeping)
+		if (isSleeping) {
 			fatigue -= SomniaConfig.FATIGUE.fatigueReplenishRate;
+			double share = SomniaConfig.FATIGUE.fatigueReplenishRate / SomniaConfig.FATIGUE.fatigueRate;
+			double replenish = SomniaConfig.FATIGUE.fatigueReplenishRate * share;
+			extraFatigueRate -= SomniaConfig.FATIGUE.fatigueReplenishRate / share / replenishedFatigue / 10;
+			replenishedFatigue -= replenish;
+		}
 		else
-			fatigue += SomniaConfig.FATIGUE.fatigueRate;
+			fatigue += SomniaConfig.FATIGUE.fatigueRate + props.getExtraFatigueRate();
 		
 		if (fatigue > 100.0d)
 			fatigue = 100.0d;
 		else if (fatigue < .0d)
 			fatigue = .0d;
-//		fatigue = 69.8d;
+
+		if (replenishedFatigue > 100)
+			replenishedFatigue = 100;
+		else if (replenishedFatigue < 0)
+			replenishedFatigue = 0;
+
+		if (extraFatigueRate < 0)
+			extraFatigueRate = 0;
+
 		props.setFatigue(fatigue);
-		if (props.updateFatigueCounter() >= 100)
+		props.setReplenishedFatigue(replenishedFatigue);
+		props.setExtraFatigueRate(extraFatigueRate);
+
+		if (props.updateFatigueCounter() >= 1)
 		{
 			props.resetFatigueCounter();
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
@@ -319,7 +337,7 @@ public class ForgeEventHandler
 		ItemStack stack = event.getItem();
 		if (stack.getItemUseAction() == EnumAction.DRINK)
 		{
-			for (Pair<ItemStack, Double> pair : SomniaAPI.getReplenishingItems())
+			for (Triple<ItemStack, Double, Double> pair : SomniaAPI.getReplenishingItems())
 			{
 				if (OreDictionary.itemMatches(stack, pair.getLeft(), false))
 				{
@@ -327,7 +345,17 @@ public class ForgeEventHandler
 					IFatigue props = entity.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 					if (props != null)
 					{
-						props.setFatigue(props.getFatigue() - pair.getRight());
+						double fatigue = props.getFatigue();
+						double replenishedFatigue = props.getReplenishedFatigue();
+						double middle = pair.getMiddle();
+						double fatigueToReplenish = Math.min(fatigue, middle);
+						double newFatigue = replenishedFatigue + fatigueToReplenish;
+						props.setReplenishedFatigue(newFatigue);
+
+						double baseMultiplier = pair.getRight();
+						double multiplier = newFatigue * 4 * SomniaConfig.FATIGUE.fatigueRate;
+						props.setExtraFatigueRate(props.getExtraFatigueRate() + baseMultiplier * multiplier);
+						props.setFatigue(fatigue - fatigueToReplenish);
 						props.maxFatigueCounter();
 					}
 				}
@@ -350,7 +378,11 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onLivingDeath(LivingDeathEvent event) {
 		IFatigue props = event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		if (props != null) props.setFatigue(0);
+		if (props != null) {
+			props.setFatigue(0);
+			props.setReplenishedFatigue(0);
+			props.setExtraFatigueRate(0);
+		}
 	}
 
 	@SubscribeEvent
