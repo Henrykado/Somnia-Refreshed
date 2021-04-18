@@ -17,7 +17,7 @@ apply plugin: 'com.matthewprenger.cursegradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 String versionClassifier = !VERSION_CLASSIFIER.isEmpty() ? "-" + VERSION_CLASSIFIER : ""
-String releaseClassifier = !VERSION_CLASSIFIER.isEmpty() ? VERSION_CLASSIFIER : "release"
+String releaseClassifier = !VERSION_CLASSIFIER.isEmpty() ? VERSION_CLASSIFIER.split("\\.")[0] : "release"
 version = VERSION_MAJOR + "." + VERSION_MINOR + (VERSION_PATCH != "0" ? "."+VERSION_PATCH : "") + versionClassifier
 group = "com.kingrunes.somnia"
 archivesBaseName = "somnia"
