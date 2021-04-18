@@ -5,21 +5,20 @@ import com.kingrunes.somnia.common.SomniaPotions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.potion.Potion;
 
-public class PotionAwakening extends Potion
-{
+public class PotionInsomnia extends Potion {
 
-    public PotionAwakening()
+    public PotionInsomnia()
     {
-        super(false, 0x00ffee);
-        setRegistryName("awakening");
-        setPotionName(Somnia.MOD_ID+".effect.awakening");
-        setIconIndex(0, 0);
+        super(true, 0x23009a);
+        setRegistryName("insomnia");
+        setPotionName(Somnia.MOD_ID+".effect.insomnia");
+        setIconIndex(1, 0);
     }
 
     @Override
     public boolean hasStatusIcon()
     {
         Minecraft.getMinecraft().getTextureManager().bindTexture(SomniaPotions.TEXTURE);
-        return true;
+        return super.hasStatusIcon();
     }
 }

@@ -27,3 +27,9 @@ potion.effect.awakening=Wakefulness Potion
 splash_potion.effect.awakening=Splash Potion of Wakefulness
 tipped_arrow.effect.awakening=Arrow of Wakefulness
 lingering_potion.effect.awakening=Lingering Potion of Wakefulness
+
+somnia.effect.insomnia=Insomnia
+potion.effect.insomnia=Insomnia Potion
+splash_potion.effect.insomnia=Splash Potion of Insomnia
+tipped_arrow.effect.insomnia=Arrow of Insomnia
+lingering_potion.effect.insomnia=Lingering Potion of Insomnia

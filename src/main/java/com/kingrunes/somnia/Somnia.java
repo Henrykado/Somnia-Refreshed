@@ -38,13 +38,13 @@ public class Somnia
 {
 	public static final String MOD_ID = "somnia";
 	public static final String NAME = "Somnia";
-	
+
 	public final List<ServerTickHandler> tickHandlers = new ArrayList<>();
 	public final List<WeakReference<EntityPlayerMP>> ignoreList = new ArrayList<>();
-	
+
 	@Instance(Somnia.MOD_ID)
 	public static Somnia instance;
-	
+
 	@SidedProxy(serverSide="com.kingrunes.somnia.setup.ServerProxy", clientSide="com.kingrunes.somnia.setup.ClientProxy")
 	public static IProxy proxy;
 	public static Logger logger;
@@ -52,7 +52,7 @@ public class Somnia
 	public static TimePeriod enterSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.enterSleepStart, SomniaConfig.TIMINGS.enterSleepEnd);
 	public static TimePeriod validSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.validSleepStart, SomniaConfig.TIMINGS.validSleepEnd);
 	public static ForgeEventHandler forgeEventHandler;
-	
+
 	@EventHandler
     public void preInit(FMLPreInitializationEvent event)
 	{
@@ -62,9 +62,9 @@ public class Somnia
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 	}
-	
+
 	@EventHandler
-	public void init(FMLInitializationEvent event) 
+	public void init(FMLInitializationEvent event)
 	{
 		logger.info("------ Init -----");
 		eventChannel = NetworkRegistry.INSTANCE.newEventDrivenChannel(MOD_ID);
@@ -75,13 +75,17 @@ public class Somnia
 		PotionHelper.addMix(PotionTypes.LONG_NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.longAwakeningPotionType);
 		PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.BLAZE_POWDER, SomniaPotions.strongAwakeningPotionType);
 
+		PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.insomniaPotionType);
+		PotionHelper.addMix(SomniaPotions.longAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.longInsomniaPotionType);
+		PotionHelper.addMix(SomniaPotions.strongAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.strongInsomniaPotionType);
+
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
 
 		CapabilityFatigue.register();
 		SideEffectStage.registerSideEffectStages();
 		SomniaConfig.registerReplenishingItems();
  	}
-	
+
 	@EventHandler
 	public void onServerStarting(FMLServerStartingEvent event)
 	{

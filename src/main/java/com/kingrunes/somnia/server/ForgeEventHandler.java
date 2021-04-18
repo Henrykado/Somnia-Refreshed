@@ -13,6 +13,7 @@ import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import com.kingrunes.somnia.common.potion.PotionAwakening;
+import com.kingrunes.somnia.common.potion.PotionInsomnia;
 import com.kingrunes.somnia.common.util.InvUtil;
 import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.SomniaUtil;
@@ -55,12 +56,12 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class ForgeEventHandler
 {
@@ -73,15 +74,24 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPotionRegister(RegistryEvent.Register<Potion> event)
 	{
-		event.getRegistry().register(SomniaPotions.awakeningPotion = new PotionAwakening());
+		event.getRegistry().registerAll(
+				SomniaPotions.awakeningPotion = new PotionAwakening(),
+				SomniaPotions.insomniaPotion = new PotionInsomnia()
+		);
 	}
 
 	@SubscribeEvent
 	public void onEffectRegister(RegistryEvent.Register<PotionType> event)
 	{
-		event.getRegistry().register(SomniaPotions.awakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400)).setRegistryName("awakening"));
-		event.getRegistry().register(SomniaPotions.longAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 3600)).setRegistryName("long_awakening"));
-		event.getRegistry().register(SomniaPotions.strongAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400, 1)).setRegistryName("strong_awakening"));
+		event.getRegistry().registerAll(
+				SomniaPotions.awakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400)).setRegistryName("awakening"),
+				SomniaPotions.longAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 3600)).setRegistryName("long_awakening"),
+				SomniaPotions.strongAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400, 1)).setRegistryName("strong_awakening"),
+
+				SomniaPotions.insomniaPotionType = new PotionType("insomnia", new PotionEffect(SomniaPotions.insomniaPotion, 1800)).setRegistryName("insomnia"),
+				SomniaPotions.longInsomniaPotionType = new PotionType("insomnia", new PotionEffect(SomniaPotions.insomniaPotion, 3000)).setRegistryName("long_insomnia"),
+				SomniaPotions.strongInsomniaPotionType = new PotionType("insomnia", new PotionEffect(SomniaPotions.insomniaPotion, 1800, 1)).setRegistryName("strong_insomnia")
+		);
 	}
 
 	@SuppressWarnings("ConstantConditions")
@@ -89,7 +99,7 @@ public class ForgeEventHandler
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
 		if (event.phase != Phase.START || event.player.world.isRemote || (!event.player.isEntityAlive() || event.player.isCreative() || event.player.isSpectator()) && !event.player.isPlayerSleeping()) return;
-		
+
 		EntityPlayer player = event.player;
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
 
@@ -98,7 +108,7 @@ public class ForgeEventHandler
 		double replenishedFatigue = props.getReplenishedFatigue();
 		double fatigue = props.getFatigue();
 		boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isPlayerSleeping();
-		
+
 		if (isSleeping) {
 			fatigue -= SomniaConfig.FATIGUE.fatigueReplenishRate;
 			double share = SomniaConfig.FATIGUE.fatigueReplenishRate / SomniaConfig.FATIGUE.fatigueRate;
@@ -108,15 +118,24 @@ public class ForgeEventHandler
 		}
 		else {
 			double rate = SomniaConfig.FATIGUE.fatigueRate;
+
 			PotionEffect wakefulness = player.getActivePotionEffect(SomniaPotions.awakeningPotion);
 			if (wakefulness != null)
 			{
 				int amplifier = wakefulness.getAmplifier();
 				rate -= amplifier == 0 ? rate / 4 : rate / 3;
 			}
+
+			PotionEffect insomnia = player.getActivePotionEffect(SomniaPotions.insomniaPotion);
+			if (insomnia != null)
+			{
+				int amplifier = insomnia.getAmplifier();
+				rate += amplifier == 0 ? rate / 2 : rate;
+			}
+
 			fatigue += rate + props.getExtraFatigueRate();
 		}
-		
+
 		if (fatigue > 100.0d)
 			fatigue = 100.0d;
 		else if (fatigue < .0d)
@@ -134,11 +153,11 @@ public class ForgeEventHandler
 		props.setReplenishedFatigue(replenishedFatigue);
 		props.setExtraFatigueRate(extraFatigueRate);
 
-		if (props.updateFatigueCounter() >= 100)
+		if (props.updateFatigueCounter() >= 1)
 		{
 			props.resetFatigueCounter();
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
-			
+
 			// Side effects
 			if (SomniaConfig.FATIGUE.fatigueSideEffects)
 			{
