@@ -153,7 +153,7 @@ public class ForgeEventHandler
 		props.setReplenishedFatigue(replenishedFatigue);
 		props.setExtraFatigueRate(extraFatigueRate);
 
-		if (props.updateFatigueCounter() >= 1)
+		if (props.updateFatigueCounter() >= 100)
 		{
 			props.resetFatigueCounter();
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
