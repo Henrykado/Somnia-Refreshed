@@ -192,7 +192,7 @@ public class ForgeEventHandler
 		EntityPlayer player = event.getEntityPlayer();
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
-			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
+			if (props.shouldSleepNormally() && player.sleepTimer == 100 && player.world.getTotalWorldTime() % 24000 < 7000) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
 			props.maxFatigueCounter();
