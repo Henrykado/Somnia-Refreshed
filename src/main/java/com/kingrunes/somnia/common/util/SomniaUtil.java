@@ -17,6 +17,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
+
 public class SomniaUtil {
     public static String timeStringForWorldTime(long time)
     {
@@ -134,8 +136,8 @@ public class SomniaUtil {
     {
         synchronized (Somnia.instance.tickHandlers)
         {
-            for (ServerTickHandler serverTickHandler : Somnia.instance.tickHandlers)
-                serverTickHandler.tickStart();
+            new ArrayList<>(Somnia.instance.tickHandlers)
+                    .forEach(ServerTickHandler::tickStart);
         }
     }
 

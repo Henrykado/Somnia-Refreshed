@@ -41,7 +41,7 @@ minecraft {
 repositories {
     maven {
         name = "ic2"
-        url = "http://maven.ic2.player.to/"
+        url = "https://maven.ic2.player.to/"
     }
     maven {
         name = "CurseMaven"
@@ -53,7 +53,7 @@ repositories {
     }
     /*maven {
         name = "Progwml6 maven"
-        url = "http://dvs1.progwml6.com/files/maven/"
+        url = "https://dvs1.progwml6.com/files/maven/"
     }*/
 }
 dependencies {
@@ -121,7 +121,7 @@ curseforge {
     project {
         id = CURSEFORGE_ID
         changelogType = "markdown"
-        changelog = System.getenv("CHANGELOG") ?: ""
+        changelog = System.getenv("CHANGELOG") ?: System.getProperty("CHANGELOG") ?: ""
         releaseType = releaseClassifier
         mainArtifact(tasks.getByName("jar"), {
             displayName = getVersionDisplayName()
@@ -145,6 +145,6 @@ task publishModrinth(type: TaskModrinthUpload) {
     uploadFile = tasks.getByName("jar")
     addLoader("forge")
     releaseType = releaseClassifier
-    changelog = System.getenv("CHANGELOG")
+    changelog = System.getenv("CHANGELOG") ?: System.getProperty("CHANGELOG") ?: ""
     addGameVersion(VERSION_MC)
 }
