@@ -290,8 +290,8 @@ public class ForgeEventHandler
 		player.setSize(0.2F, 0.2F);
 
 		if (enumfacing != null) {
-			float f1 = 0.5F + (float)enumfacing.getFrontOffsetX() * 0.4F;
-			float f = 0.5F + (float)enumfacing.getFrontOffsetZ() * 0.4F;
+			float f1 = 0.5F + (float)enumfacing.getXOffset() * 0.4F;
+			float f = 0.5F + (float)enumfacing.getZOffset() * 0.4F;
 			player.setRenderOffsetForSleep(enumfacing);
 			player.setPosition(((float)pos.getX() + f1), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + f));
 		}
