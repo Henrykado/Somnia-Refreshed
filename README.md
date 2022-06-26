@@ -1,4 +1,7 @@
 # Somnia
+
+### 1.16+ code is available at [Su5eD/Somnia-Awoken](https://github.com/Su5eD/Somnia-Awoken).
+
 A Minecraft mod that simulates the world while you sleep, initially released 2011.  
 ![Main](https://github.com/Su5eD/Somnia/workflows/Main/badge.svg)
 ![Download count](http://cf.way2muchnoise.eu/full_400796_downloads.svg)
@@ -16,6 +19,3 @@ All information is available on Somnia's ![wiki](https://github.com/Su5eD/Somnia
 ## Highlighted changes
 - Works properly on servers
 - Fixed selecting wake time
-
-## Usage in modpacks
-You are free to use this mod in your FREE mod packs (advertising such as adf.ly is fine), just be sure to give credit to the mod authors.
