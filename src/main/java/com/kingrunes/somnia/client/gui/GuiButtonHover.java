@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.client.gui;
 
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -22,7 +23,8 @@ public class GuiButtonHover extends GuiButton {
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         super.drawButton(mc, mouseX, mouseY, partialTicks);
-        this.displayString = this.hoverText != null && this.hovered ? this.hoverText : this.buttonText;
+        if (SomniaConfig.OPTIONS.enableClockAndButtonHoverText)
+        	this.displayString = this.hoverText != null && this.hovered ? this.hoverText : this.buttonText;
     }
 
     public long getWakeTime() {

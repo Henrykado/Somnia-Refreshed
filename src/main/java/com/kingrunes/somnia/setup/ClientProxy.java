@@ -1,7 +1,9 @@
 package com.kingrunes.somnia.setup;
 
+import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.client.ClientTickHandler;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -30,7 +32,8 @@ public class ClientProxy implements IProxy
 	@Override
 	public void handleGUIOpenPacket() {
 		final Minecraft mc = Minecraft.getMinecraft();
-		mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSelectWakeTime()));
+		if (SomniaConfig.OPTIONS.enableWakeTimeSelectMenu)
+			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSelectWakeTime()));
 	}
 
 	@Override
@@ -65,14 +68,15 @@ public class ClientProxy implements IProxy
 	@Override
 	public void handleWakePacket(EntityPlayerMP player)
 	{
-		player.wakeUpPlayer(true, true, true);
+		if (player != null) player.wakeUpPlayer(true, true, true);
 		Minecraft.getMinecraft().displayGuiScreen(null);
 	}
 
 	@Override
 	public void updateWakeTime(EntityPlayer player) {
 		if (ClientProxy.clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
-		long totalWorldTime = player.world.getTotalWorldTime();
-		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+		
+		long worldTime = player.world.getWorldTime();
+		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(worldTime, (worldTime % 24000) > 12000 ? 0 : 12000);
 	}
 }

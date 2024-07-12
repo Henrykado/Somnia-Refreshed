@@ -38,11 +38,12 @@ public class ServerTickHandler
 					tps					= 0;		// Set per second to liTPS, used to work out actual multiplier to send to clients
 	
 	private double 	multiplier 			= SomniaConfig.LOGIC.baseMultiplier;
+	private double 	worldTimeMultiplier = SomniaConfig.PERFORMANCE.fasterWorldTimeMultiplier;
 	
 	public ServerTickHandler(WorldServer worldServer)
 	{
 		this.worldServer = worldServer;
-	}
+	}	
 	
 	public void tickStart()
 	{
@@ -58,7 +59,7 @@ public class ServerTickHandler
 				currentSleepPeriod = 0;
 				if (currentState == ACTIVE) // acceleration started
 				{
-					lastSleepStart = worldServer.getTotalWorldTime();
+					lastSleepStart = worldServer.getWorldTime();
 					activeTickHandlers++;
 				}
 				else if (prevState == ACTIVE) // acceleration stopped
@@ -103,11 +104,12 @@ public class ServerTickHandler
 				{
 					ep.wakeUpPlayer(false, true, true); // Stop clients ignoring GUI close packets (major hax)
 				}
-				if (key != null) ep.sendMessage(new TextComponentTranslation(String.format(TRANSLATION_FORMAT, key)));
+				if (key != null && key != "NOT_NOW") 
+					ep.sendMessage(new TextComponentTranslation(String.format(TRANSLATION_FORMAT, key.toLowerCase())));
 			}
 		}
 	}
-
+	
 	private void incrementCounters()
 	{
 		liTps++;
@@ -115,6 +117,7 @@ public class ServerTickHandler
 	}
 	
 	private double overflow = .0d;
+	private double worldTimeOverflow = .0d;
 	private void doMultipliedTicking()
 	{
 		/*
@@ -167,6 +170,15 @@ public class ServerTickHandler
 		 */
 		for (Object obj : worldServer.playerEntities)
 			Somnia.forgeEventHandler.onPlayerTick(new TickEvent.PlayerTickEvent(Phase.START, (EntityPlayer) obj));
+		
+		if (SomniaConfig.PERFORMANCE.fasterWorldTime)
+		{
+			double target = worldTimeMultiplier + worldTimeOverflow;
+			int liTarget = (int) Math.floor(target);
+			worldTimeOverflow = target - liTarget;
+			
+			worldServer.setWorldTime(worldServer.getWorldTime() + liTarget);
+		}
 		
 		incrementCounters();
 	}

@@ -5,8 +5,8 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
+import com.kingrunes.somnia.common.SomniaConfig.DisplayPosition;
 import com.kingrunes.somnia.common.StreamUtils;
-import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -45,12 +45,8 @@ public class ClientTickHandler
 								SPEED_FORMAT = "%sx%s",
 								ETA_FORMAT = WHITE + "(%s:%s)";
 
-	private static final String FATIGUE_FORMAT = WHITE + "Fatigue: %.2f";
-	
-	private boolean moddedFOV = false;
-	private float fov = -1;
 	private boolean muted = false;
-	private float defVol;
+	private float defVol1; private float defVol2;
 	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 	public long startTicks = -1L;
 	public double speed = 0;
@@ -96,32 +92,6 @@ public class ClientTickHandler
 		GameSettings gameSettings = Minecraft.getMinecraft().gameSettings;
 		
 		/*
-		 * Fixes some rendering issues with high FOVs when the GUIs are open during sleep
-		 */
-		
-		if (mc.player.isPlayerSleeping())
-		{
-			if (SomniaConfig.OPTIONS.vanillaBugFixes)
-			{
-				if (!moddedFOV)
-				{
-					moddedFOV = true;
-					if (gameSettings.fovSetting >= 0.75352114)
-					{
-						fov = gameSettings.fovSetting;
-						gameSettings.fovSetting = 0.7253521f;
-					}
-				}
-			}
-		}
-		else if (moddedFOV)
-		{
-			moddedFOV = false;
-			if (fov > .0f)
-				Minecraft.getMinecraft().gameSettings.fovSetting = fov;
-		}
-		
-		/*
 		 * If the player is sleeping and the player has chosen the 'muteSoundWhenSleeping' option in the config,
 		 * set the master volume to 0
 		 */
@@ -133,8 +103,10 @@ public class ClientTickHandler
 				if (!muted)
 				{
 					muted = true;
-					defVol = gameSettings.getSoundLevel(SoundCategory.MASTER);
-					gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
+					defVol1 = gameSettings.getSoundLevel(SoundCategory.HOSTILE);
+					defVol2 = gameSettings.getSoundLevel(SoundCategory.NEUTRAL);
+					gameSettings.setSoundLevel(SoundCategory.HOSTILE, .0f);
+					gameSettings.setSoundLevel(SoundCategory.NEUTRAL, .0f);
 				}
 			}
 		}
@@ -143,7 +115,8 @@ public class ClientTickHandler
 			if (muted)
 			{
 				muted = false;
-				gameSettings.setSoundLevel(SoundCategory.MASTER, defVol);
+				gameSettings.setSoundLevel(SoundCategory.HOSTILE, defVol1);
+				gameSettings.setSoundLevel(SoundCategory.NEUTRAL, defVol2);
 			}
 		}
 		
@@ -151,7 +124,7 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		if (ClientProxy.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= ClientProxy.clientAutoWakeTime)
+		if (ClientProxy.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getWorldTime() >= ClientProxy.clientAutoWakeTime)
 		{
 			ClientProxy.clientAutoWakeTime = -1;
 			Somnia.eventChannel.sendToServer(PacketHandler.buildWakePacket());
@@ -165,49 +138,7 @@ public class ClientTickHandler
 			if (mc.player == null || !mc.player.isPlayerSleeping()) return;
 		}
 		
-		FontRenderer fontRenderer = mc.fontRenderer;
 		ScaledResolution scaledResolution = new ScaledResolution(mc);
-		if (event.phase == Phase.END && !mc.player.capabilities.isCreativeMode && !mc.player.isSpectator() && !mc.gameSettings.hideGUI) {
-			if (!mc.player.isPlayerSleeping() && !SomniaConfig.FATIGUE.fatigueSideEffects && ClientProxy.playerFatigue > SomniaConfig.FATIGUE.minimumFatigueToSleep) return;
-
-			String str;
-			IFatigue props = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-			if (SomniaConfig.FATIGUE.simpleFatigueDisplay && props != null) str = WHITE + SideEffectStage.getSideEffectStageDescription(ClientProxy.playerFatigue);
-			else str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
-
-			int x, y, stringWidth = fontRenderer.getStringWidth(str);
-			String param = mc.player.isPlayerSleeping() ? "br" : SomniaConfig.FATIGUE.displayFatigue.toLowerCase();
-			switch (param) {
-				case "tc":
-					x = (scaledResolution.getScaledWidth() / 2 ) - (stringWidth / 2);
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "tl":
-					x = 10;
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "tr":
-					x = scaledResolution.getScaledWidth() - stringWidth - 10;
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "bc":
-					x = (scaledResolution.getScaledWidth() / 2 ) - (stringWidth / 2);
-					y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 45;
-					break;
-				case "bl":
-					x = 10;
-					y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 10;
-					break;
-				case "br":
-					x = scaledResolution.getScaledWidth() - stringWidth - 10;
-					y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 10;
-					break;
-				default:
-					return;
-			}
-			fontRenderer.drawString(str, x, y, Integer.MIN_VALUE);
-		}
-
 		if (mc.player.isPlayerSleeping() && SomniaConfig.OPTIONS.somniaGui && ClientProxy.playerFatigue != -1) renderSleepGui(scaledResolution);
 		else if (startTicks != -1 || speed != 0) {
 			this.startTicks = -1;
@@ -217,14 +148,14 @@ public class ClientTickHandler
 
 	private void renderSleepGui(ScaledResolution scaledResolution) {
 		boolean currentlySleeping = speed != .0d;
+		
 		if (currentlySleeping)
 		{
 			if (startTicks == -1L)
-				startTicks = this.mc.world.getTotalWorldTime();
+				startTicks = this.mc.world.getWorldTime();
 		}
 		else
 			startTicks = -1L;
-
 
 		/*
 		 * GL stuff
@@ -243,11 +174,11 @@ public class ClientTickHandler
 		{
 			// Progress Bar
 			mc.getTextureManager().bindTexture(Gui.ICONS);
-
-			double 	rel = mc.world.getTotalWorldTime()-startTicks,
+			
+			double 	rel = mc.world.getWorldTime()-startTicks,
 					diff = ClientProxy.clientAutoWakeTime-startTicks,
 					progress = rel / diff;
-
+			
 			int 	x = 20,
 					maxWidth = (scaledResolution.getScaledWidth()-(x*2));
 
@@ -259,26 +190,42 @@ public class ClientTickHandler
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			renderProgressBar(x, 10, maxWidth, progress);
 
+			int offsetX = SomniaConfig.OPTIONS.displayETASleep == DisplayPosition.CENTER ? scaledResolution.getScaledWidth()/2 - 80 : SomniaConfig.OPTIONS.displayETASleep == DisplayPosition.RIGHT ? maxWidth - 160 : 0;
+			
 			// Multiplier
-			int offsetX = SomniaConfig.FATIGUE.displayETASleep.equals("center") ? scaledResolution.getScaledWidth()/2 - 80 : SomniaConfig.FATIGUE.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
-
+			if (!SomniaConfig.OPTIONS.guiDisableTickMultiplier)
+			{
+				if (SomniaConfig.PERFORMANCE.fasterWorldTime)
+				{
+					renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed * SomniaConfig.PERFORMANCE.fasterWorldTimeMultiplier);
+				}
+				else renderScaledString(x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
+			}
+				
 			// ETA
-			double average = new ArrayList<>(speedValues)
-					.stream()
-					.filter(Objects::nonNull)
-					.mapToDouble(Double::doubleValue)
-					.summaryStatistics()
-					.getAverage();
-			long etaTotalSeconds = Math.round((diff - rel) / (average * 20));
-
-			long etaSeconds = etaTotalSeconds % 60,
-					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
-
-			renderScaledString(x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
-
+			if (!SomniaConfig.OPTIONS.guiDisableETA)
+			{	
+				double average = new ArrayList<>(speedValues)
+						.stream()
+						.filter(Objects::nonNull)
+						.mapToDouble(Double::doubleValue)
+						.summaryStatistics()
+						.getAverage();
+				
+				if (SomniaConfig.PERFORMANCE.fasterWorldTime)
+					average *= SomniaConfig.PERFORMANCE.fasterWorldTimeMultiplier;
+				
+				long etaTotalSeconds = Math.round((diff - rel) / (average * 20));
+	
+				long etaSeconds = etaTotalSeconds % 60,
+						etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
+	
+				renderScaledString(x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+			}
+				
 			// Clock
-			renderClock(maxWidth);
+			if (!SomniaConfig.OPTIONS.guiDisableClock)
+				renderClock(maxWidth);
 		}
 	}
 
@@ -319,14 +266,14 @@ public class ClientTickHandler
 		int x;
 		switch (SomniaConfig.OPTIONS.somniaGuiClockPosition)
 		{
-			case "left":
+			case LEFT:
 				x = 40;
 				break;
-			case "center":
+			case CENTER:
 				x = maxWidth / 2;
 				break;
 			default:
-			case "right":
+			case RIGHT:
 				x = maxWidth - 40;
 				break;
 		}

@@ -19,10 +19,9 @@ public enum SomniaState
 	COOLDOWN;
 	
 	public static SomniaState getState(ServerTickHandler handler)
-	{
-		long totalWorldTime = handler.worldServer.getTotalWorldTime();
-		
-		if (!Somnia.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
+	{	
+		long worldTime = handler.worldServer.getWorldTime() % 24000;
+		if (!Somnia.validSleepPeriod.isTimeWithin(worldTime))
 			return NOT_NOW;
 		
 		if (handler.worldServer.playerEntities.isEmpty())
@@ -32,7 +31,7 @@ public enum SomniaState
 		
 		boolean anySleeping = false, allSleeping = true;
 		int somniaSleep = 0, normalSleep = 0;
-
+		
 		for (EntityPlayer entityPlayer : players) {
 			EntityPlayerMP player = (EntityPlayerMP) entityPlayer;
 			boolean sleeping = player.isPlayerSleeping() || ListUtils.containsRef(player, Somnia.instance.ignoreList);
@@ -40,10 +39,11 @@ public enum SomniaState
 			allSleeping &= sleeping;
 
 			IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+			
 			if (props != null && props.shouldSleepNormally()) normalSleep++;
 			else somniaSleep++;
 		}
-
+		
 		if (allSleeping) {
 			if (somniaSleep >= normalSleep) return ACTIVE;
 		} else if (anySleeping) return WAITING_PLAYERS;

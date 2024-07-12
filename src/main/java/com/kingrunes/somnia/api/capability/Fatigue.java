@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 public class Fatigue implements IFatigue {
 
     private double fatigue, extraFatigueRate, replenishedFatigue;
-    private int fatigueUpdateCounter = 0, sideEffectStage = -1;
+    private int fatigueUpdateCounter = 0;
     private boolean resetSpawn = true, sleepNormally = false;
 
     @Override
@@ -19,18 +19,6 @@ public class Fatigue implements IFatigue {
     public void setFatigue(double fatigue)
     {
         this.fatigue = fatigue;
-    }
-
-    @Override
-    public int getSideEffectStage()
-    {
-        return this.sideEffectStage;
-    }
-
-    @Override
-    public void setSideEffectStage(int stage)
-    {
-        this.sideEffectStage = stage;
     }
 
     @Override
@@ -97,7 +85,6 @@ public class Fatigue implements IFatigue {
         tag.setDouble("fatigue", this.fatigue);
         tag.setDouble("extraFatigueRate", this.extraFatigueRate);
         tag.setDouble("replenishedFatigue", this.replenishedFatigue);
-        tag.setInteger("sideEffectStage", this.sideEffectStage);
         tag.setBoolean("resetSpawn", this.resetSpawn);
         return tag;
     }
@@ -108,7 +95,6 @@ public class Fatigue implements IFatigue {
         this.fatigue = nbt.getDouble("fatigue");
         this.extraFatigueRate = nbt.getDouble("extraFatigueRate");
         this.replenishedFatigue = nbt.getDouble("replenishedFatigue");
-        this.sideEffectStage = nbt.getInteger("sideEffectStage");
         this.resetSpawn = nbt.getBoolean("resetSpawn");
     }
 }

@@ -6,7 +6,6 @@ import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
-import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
@@ -53,11 +52,18 @@ public class Somnia
 	public static TimePeriod validSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.validSleepStart, SomniaConfig.TIMINGS.validSleepEnd);
 	public static ForgeEventHandler forgeEventHandler;
 
+	@SuppressWarnings("incomplete-switch")
 	@EventHandler
     public void preInit(FMLPreInitializationEvent event)
 	{
 		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
+		
+		switch (SomniaConfig.TIMINGS._enterSleepPreset)
+		{
+			case NIGHT: enterSleepPeriod = new TimePeriod(12000, 24000); break;
+			case DAY: enterSleepPeriod = new TimePeriod(24000, 12000); break;
+		}
 
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
@@ -71,18 +77,20 @@ public class Somnia
 		eventChannel.register(new PacketHandler());
 		proxy.register();
 
-		PotionHelper.addMix(PotionTypes.NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.awakeningPotionType);
-		PotionHelper.addMix(PotionTypes.LONG_NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.longAwakeningPotionType);
-		PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.BLAZE_POWDER, SomniaPotions.strongAwakeningPotionType);
-
-		PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.insomniaPotionType);
-		PotionHelper.addMix(SomniaPotions.longAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.longInsomniaPotionType);
-		PotionHelper.addMix(SomniaPotions.strongAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.strongInsomniaPotionType);
-
+		if (!SomniaConfig.OPTIONS.disablePotions)
+		{
+			PotionHelper.addMix(PotionTypes.NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.awakeningPotionType);
+			PotionHelper.addMix(PotionTypes.LONG_NIGHT_VISION, Items.SPECKLED_MELON, SomniaPotions.longAwakeningPotionType);
+			PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.BLAZE_POWDER, SomniaPotions.strongAwakeningPotionType);
+	
+			PotionHelper.addMix(SomniaPotions.awakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.insomniaPotionType);
+			PotionHelper.addMix(SomniaPotions.longAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.longInsomniaPotionType);
+			PotionHelper.addMix(SomniaPotions.strongAwakeningPotionType, Items.FERMENTED_SPIDER_EYE, SomniaPotions.strongInsomniaPotionType);
+		}
+			
 		MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
 
 		CapabilityFatigue.register();
-		SideEffectStage.registerSideEffectStages();
 		SomniaConfig.registerReplenishingItems();
  	}
 

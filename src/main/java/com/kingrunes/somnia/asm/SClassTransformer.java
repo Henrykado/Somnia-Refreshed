@@ -56,10 +56,11 @@ public class SClassTransformer implements IClassTransformer
 	}
 
 	private void patchEntityPlayer(ClassNode classNode, boolean obf) {
-		String methodName = obf ? "a" : "wakeUpPlayer";
+		String methodWakeUpPlayer = obf ? "a" : "wakeUpPlayer",
+				methodIsPlayerFullyAsleep = obf ? "dc" : "isPlayerFullyAsleep";
 
 		for (MethodNode m : classNode.methods) {
-			if (m.name.equals(methodName) && m.desc.equals("(ZZZ)V")) {
+			if (m.name.equals(methodWakeUpPlayer) && m.desc.equals("(ZZZ)V")) {
 				InsnList insnList = new InsnList();
 
 				LabelNode label9 = new LabelNode();
@@ -68,7 +69,17 @@ public class SClassTransformer implements IClassTransformer
 				insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/common/util/SomniaUtil", "shouldResetSpawn", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
 				insnList.add(new VarInsnNode(Opcodes.ISTORE, 3));
 				m.instructions.insertBefore(m.instructions.get(0), insnList);
-
+			}
+			else if (m.name.equals(methodIsPlayerFullyAsleep) && m.desc.equals("()Z"))
+			{
+				InsnList insnList = new InsnList();
+				
+				insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+				insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/kingrunes/somnia/common/util/SomniaUtil", "isPlayerFullyAsleep", "(Lnet/minecraft/entity/player/EntityPlayer;)Z", false));
+				insnList.add(new InsnNode(Opcodes.IRETURN));
+				
+				m.instructions.insert(insnList);
+				
 				break;
 			}
 		}

@@ -4,13 +4,18 @@ import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.util.InvUtil;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlayerSleepTickHandler
 {
@@ -28,40 +33,44 @@ public class PlayerSleepTickHandler
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
 		State state = event.side == Side.CLIENT ? clientState : serverState;
-		if (event.phase == Phase.START)
-			tickStart(state, event.player);
-		else
-			tickEnd(state, event.player);
+		if (event.phase == Phase.START) tickStart(state, event.player);
 	}
 
 	public void tickStart(State state, EntityPlayer player)
 	{
 		if (player.isPlayerSleeping())
-		{
+		{			
 			BlockPos pos = player.bedLocation;
+			boolean sleepOverride = true;
 
 			//Reset fatigue in case you pick the charm up while sleeping. Doesn't trigger otherwise, because Somnia keeps the sleep timer below 100
 			if (player.sleepTimer > 99 && Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP)) {
 				player.sleepTimer = 100;
-				state.sleepOverride = false;
+				sleepOverride = false;
 				return;
 			}
 
 			if (player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) {
 				IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 				if (props.shouldSleepNormally()) {
-					state.sleepOverride = false;
+					sleepOverride = false;
 					return;
 				}
 			}
 
 			if (!CompatModule.checkBed(player, pos)) {
-				state.sleepOverride = false;
-				return;
+				sleepOverride = false;
+				
 			}
 
-			state.sleepOverride = true;
-			player.sleeping = false;
+			if (!sleepOverride)
+			{
+				if (player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) {
+					IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+					props.setSleepNormally(true);
+				}
+				return;
+			}
 			
 			if (player.world.isRemote && SomniaConfig.OPTIONS.fading)
 			{
@@ -70,15 +79,6 @@ public class PlayerSleepTickHandler
 					sleepTimer = 98;
 				player.sleepTimer = sleepTimer;
 			}
-		}
-	}
-
-	public void tickEnd(State state, EntityPlayer player)
-	{
-		if (state.sleepOverride)
-		{
-			player.sleeping = true;
-			state.sleepOverride = false;
 		}
 	}
 }

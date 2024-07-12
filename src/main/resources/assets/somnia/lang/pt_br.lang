@@ -1,0 +1,22 @@
+somnia.status.armor=Essa armadura parece desconfortavel
+somnia.status.cooldown=Você ainda não está cansado
+somnia.status.expired=Você não pode dormir para sempre
+somnia.status.not_now=Algo está te mantendo acordado
+somnia.status.waiting=Esperando pelo servidor
+somnia.status.waiting_players=Esperando para os outros jogadores dormirem
+
+somnia.effect.awakening=Vigília
+potion.effect.awakening=Poção de Vigília
+splash_potion.effect.awakening=Poção Arremessável de Vigília
+tipped_arrow.effect.awakening=Flecha de Vigília
+lingering_potion.effect.awakening=Poção Prolongada de Vigília
+
+somnia.effect.insomnia=Insônia
+potion.effect.insomnia=Poção de Insônia
+splash_potion.effect.insomnia=Poção Arremessável de Insônia
+tipped_arrow.effect.insomnia=Flecha de Insônia
+lingering_potion.effect.insomnia=Poção Prolongada de Insônia
+
+somnia.effect.sleepy=Sonolência
+somnia.effect.exhausted=Exaustão
+somnia.effect.fading=Apagando

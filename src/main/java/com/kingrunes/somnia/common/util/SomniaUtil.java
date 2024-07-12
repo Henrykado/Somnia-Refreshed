@@ -3,6 +3,7 @@ package com.kingrunes.somnia.common.util;
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.server.ServerTickHandler;
@@ -50,14 +51,14 @@ public class SomniaUtil {
         return false;
     }
 
-    public static long calculateWakeTime(long totalWorldTime, int i)
+    public static long calculateWakeTime(long worldTime, int i)
     {
-        long l;
-        long timeInDay = totalWorldTime % 24000L;
-        l = totalWorldTime - timeInDay + i;
-        if (timeInDay > i)
-            l += 24000L;
-        return l;
+        long wakeTime;
+        long l = worldTime % 24000;
+        wakeTime = worldTime - l + i;
+        if (l > i) 
+        	wakeTime += 24000L;
+        return wakeTime;
     }
 
     /*
@@ -119,7 +120,7 @@ public class SomniaUtil {
     @SuppressWarnings("unused")
     public static boolean checkFatigue(EntityPlayer player) {
         IFatigue fatigue = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-        return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.minimumFatigueToSleep;
+        return player.capabilities.isCreativeMode || fatigue == null || fatigue.getFatigue() >= SomniaConfig.FATIGUE.fatigueSleepy;
     }
 
     @SuppressWarnings("unused")
@@ -140,10 +141,19 @@ public class SomniaUtil {
                     .forEach(ServerTickHandler::tickStart);
         }
     }
+    
+    public static boolean isPlayerFullyAsleep(EntityPlayer player)
+    {
+    	IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+    	if (props != null && props.shouldSleepNormally()) 
+    		return false;
+    	
+    	return player.sleeping && player.sleepTimer >= 100;
+    }
 
     public static double calculateFatigueToReplenish(EntityPlayer player)
     {
-        long worldTime = player.world.getTotalWorldTime();
+        long worldTime = player.world.getWorldTime();
         long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
         return SomniaConfig.FATIGUE.fatigueReplenishRate * (wakeTime - worldTime);
     }

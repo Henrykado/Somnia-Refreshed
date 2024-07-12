@@ -8,10 +8,6 @@ public interface IFatigue extends INBTSerializable<NBTTagCompound> {
 
     void setFatigue(double fatigue);
 
-    int getSideEffectStage();
-
-    void setSideEffectStage(int stage);
-
     int updateFatigueCounter();
 
     void resetFatigueCounter();

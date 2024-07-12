@@ -1,12 +1,12 @@
 [
 {
   "modid": "somnia",
-  "name": "Somnia",
+  "name": "Somnia Refreshed",
   "description": "Somnia simulates the world while you sleep.",
-  "mcversion": "${mcversion}",
+  "mcversion": "1.12.2",
   "version": "${version}",
   "url": "https://www.curseforge.com/minecraft/mc-mods/somnia",
-  "authorList": ["Kingrunes", "MALfunction84", "Su5eD"],
+  "authorList": ["Kingrunes", "MALfunction84", "Su5eD", "Henrykado"],
   "logoFile": "logo.png",
   "screenshots": [],
   "dependencies": []

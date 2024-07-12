@@ -4,9 +4,13 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.capability.CapabilityFatigue;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler;
+import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
 import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.math.BlockPos;
@@ -15,6 +19,7 @@ import net.minecraft.util.math.RayTraceResult;
 public class GuiSelectWakeTime extends GuiScreen
 {
 	private boolean resetSpawn = true;
+	private boolean sleepNormally = false;
 
 	@Override
 	public void initGui()
@@ -42,6 +47,8 @@ public class GuiSelectWakeTime extends GuiScreen
 		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunset", 13000));
 		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 100, buttonCenterY + 44, buttonWidth, buttonHeight, "After Sunset", 14000));
 		buttonList.add(new GuiButtonHover(i, buttonCenterX + 88, buttonCenterY + 66, buttonWidth, buttonHeight, "Before Midnight", 16000));
+		if (SomniaConfig.OPTIONS.enableSleepNormallyButton)
+			buttonList.add(new GuiButton(i++, buttonCenterX + 5, buttonCenterY - 44, 90, buttonHeight, "Sleep Normally"));
 	}
 
 	@Override
@@ -49,7 +56,8 @@ public class GuiSelectWakeTime extends GuiScreen
 		this.drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		drawCenteredString(this.fontRenderer, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
-		drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 - 66, 16777215);
+		if (SomniaConfig.OPTIONS.enableClockAndButtonHoverText)
+			drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 + 41, 16777215);
 	}
 
 	@Override
@@ -63,6 +71,8 @@ public class GuiSelectWakeTime extends GuiScreen
 		} else if (par1GuiButton.id == 1) {
 			mc.displayGuiScreen(null);
 			return;
+		} else if (SomniaConfig.OPTIONS.enableSleepNormallyButton && par1GuiButton.displayString == "Sleep Normally") {
+			sleepNormally = true;
 		} else if (par1GuiButton instanceof GuiButtonHover) {
 			i = (int) ((GuiButtonHover)par1GuiButton).getWakeTime();
 		}
@@ -71,8 +81,16 @@ public class GuiSelectWakeTime extends GuiScreen
 		if (props != null) {
 			props.setResetSpawn(this.resetSpawn);
 			Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x01, props.shouldResetSpawn()));
+			if (SomniaConfig.OPTIONS.enableSleepNormallyButton)
+			{
+				props.setSleepNormally(sleepNormally);
+				Somnia.eventChannel.sendToServer(PacketHandler.buildPropUpdatePacket(0x01, 0x02, props.shouldSleepNormally()));
+				sleepNormally = false;
+			}
 		}
-		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(mc.world.getTotalWorldTime(), i);
+		ClientProxy.clientAutoWakeTime = SomniaUtil.calculateWakeTime(mc.world.getWorldTime(), i);
+		
+		
 		/*
 		 * Nice little hack to simulate a right click on the bed, don't try this at home kids
 		 */

@@ -96,6 +96,9 @@ public class PacketHandler
 				if (val == 0x01) {
 					props.setResetSpawn(in.readBoolean());
 				}
+				else if (val == 0x02) {
+					props.setSleepNormally(in.readBoolean());
+				}
 			}
 		}
 	}

@@ -8,14 +8,17 @@ import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.PlayerSleepTickHandler;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler.State;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
 import com.kingrunes.somnia.common.compat.RailcraftPlugin;
+import com.kingrunes.somnia.common.potion.ExhaustedEffect;
+import com.kingrunes.somnia.common.potion.FadingEffect;
 import com.kingrunes.somnia.common.potion.PotionAwakening;
 import com.kingrunes.somnia.common.potion.PotionInsomnia;
+import com.kingrunes.somnia.common.potion.SleepyEffect;
 import com.kingrunes.somnia.common.util.InvUtil;
-import com.kingrunes.somnia.common.util.SideEffectStage;
 import com.kingrunes.somnia.common.util.SomniaUtil;
 import com.kingrunes.somnia.setup.ClientProxy;
 import net.minecraft.block.BlockHorizontal;
@@ -50,10 +53,12 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.oredict.OreDictionary;
@@ -76,13 +81,18 @@ public class ForgeEventHandler
 	{
 		event.getRegistry().registerAll(
 				SomniaPotions.awakeningPotion = new PotionAwakening(),
-				SomniaPotions.insomniaPotion = new PotionInsomnia()
+				SomniaPotions.insomniaPotion = new PotionInsomnia(),
+				SomniaPotions.sleepyEffect = new SleepyEffect(),
+				SomniaPotions.exhaustedEffect = new ExhaustedEffect(),
+				SomniaPotions.fadingEffect = new FadingEffect()
 		);
 	}
 
 	@SubscribeEvent
 	public void onEffectRegister(RegistryEvent.Register<PotionType> event)
 	{
+		if (SomniaConfig.OPTIONS.disablePotions) return;
+		
 		event.getRegistry().registerAll(
 				SomniaPotions.awakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 2400)).setRegistryName("awakening"),
 				SomniaPotions.longAwakeningPotionType = new PotionType("awakening", new PotionEffect(SomniaPotions.awakeningPotion, 3600)).setRegistryName("long_awakening"),
@@ -94,11 +104,10 @@ public class ForgeEventHandler
 		);
 	}
 
-	@SuppressWarnings("ConstantConditions")
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
-		if (event.phase != Phase.START || event.player.world.isRemote || (!event.player.isEntityAlive() || event.player.isCreative() || event.player.isSpectator()) && !event.player.isPlayerSleeping()) return;
+		if (event.phase != Phase.START || event.player.world.isRemote || (!event.player.isEntityAlive() || event.player.isCreative() || event.player.isSpectator()) && !event.player.isPlayerSleeping() || !SomniaConfig.FATIGUE.enableFatigueSystem) return;
 
 		EntityPlayer player = event.player;
 		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
@@ -107,9 +116,8 @@ public class ForgeEventHandler
 		double extraFatigueRate = props.getExtraFatigueRate();
 		double replenishedFatigue = props.getReplenishedFatigue();
 		double fatigue = props.getFatigue();
-		boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isPlayerSleeping();
 
-		if (isSleeping) {
+		if (player.isPlayerSleeping()) {
 			fatigue -= SomniaConfig.FATIGUE.fatigueReplenishRate;
 			double share = SomniaConfig.FATIGUE.fatigueReplenishRate / SomniaConfig.FATIGUE.fatigueRate;
 			double replenish = SomniaConfig.FATIGUE.fatigueReplenishRate * share;
@@ -136,13 +144,13 @@ public class ForgeEventHandler
 			fatigue += rate + props.getExtraFatigueRate();
 		}
 
-		if (fatigue > 100.0d)
-			fatigue = 100.0d;
+		if (fatigue > SomniaConfig.FATIGUE.maxFatigue)
+			fatigue = SomniaConfig.FATIGUE.maxFatigue;
 		else if (fatigue < .0d)
 			fatigue = .0d;
 
-		if (replenishedFatigue > 100)
-			replenishedFatigue = 100;
+		if (replenishedFatigue > SomniaConfig.FATIGUE.maxFatigue)
+			replenishedFatigue = SomniaConfig.FATIGUE.maxFatigue;
 		else if (replenishedFatigue < 0)
 			replenishedFatigue = 0;
 
@@ -159,30 +167,37 @@ public class ForgeEventHandler
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
 
 			// Side effects
-			if (SomniaConfig.FATIGUE.fatigueSideEffects)
+			if (fatigue < SomniaConfig.FATIGUE.fatigueSleepy)
 			{
-				int lastSideEffectStage = props.getSideEffectStage();
-				SideEffectStage firstStage = SideEffectStage.stages[0];
-				if (fatigue < firstStage.minFatigue)
-				{
-					props.setSideEffectStage(-1);
-					for (SideEffectStage stage : SideEffectStage.stages)
-					{
-						if (lastSideEffectStage < stage.minFatigue)
-							player.removePotionEffect(Potion.getPotionById(stage.potionID));
-					}
-				}
-
-				for (int i = 0; i < SomniaConfig.FATIGUE.sideEffectStages.length; i++)
-				{
-					SideEffectStage stage = SideEffectStage.stages[i];
-					boolean permanent = stage.duration < 0;
-					if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (permanent || lastSideEffectStage < stage.minFatigue))
-					{
-						if (!permanent) props.setSideEffectStage(stage.minFatigue);
-						player.addPotionEffect(new PotionEffect(Potion.getPotionById(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
-					}
-				}
+				player.removePotionEffect(SomniaPotions.sleepyEffect);
+				player.removePotionEffect(SomniaPotions.exhaustedEffect);
+				player.removePotionEffect(SomniaPotions.fadingEffect);
+			}
+			else if (fatigue >= SomniaConfig.FATIGUE.fatigueFading
+					&& SomniaConfig.FATIGUE.fatigueFading >= 0)
+			{
+				if (!player.isPlayerSleeping())
+					SomniaPotions.fadingEffect.addExtraPotionEffects(player);
+				player.addPotionEffect(new PotionEffect(SomniaPotions.fadingEffect, 99999, 0, true, true));
+				player.removePotionEffect(SomniaPotions.sleepyEffect);
+				player.removePotionEffect(SomniaPotions.exhaustedEffect);
+			}
+			else if (fatigue >= SomniaConfig.FATIGUE.fatigueExhausted 
+					&& SomniaConfig.FATIGUE.fatigueExhausted >= 0)
+			{
+				if (!player.isPlayerSleeping())
+					SomniaPotions.exhaustedEffect.addExtraPotionEffects(player);
+				player.addPotionEffect(new PotionEffect(SomniaPotions.exhaustedEffect, 99999, 0, true, true));
+				player.removePotionEffect(SomniaPotions.sleepyEffect);
+				player.removePotionEffect(SomniaPotions.fadingEffect);
+			}
+			else
+			{
+				if (!player.isPlayerSleeping())
+					SomniaPotions.sleepyEffect.addExtraPotionEffects(player);
+				player.addPotionEffect(new PotionEffect(SomniaPotions.sleepyEffect, 99999, 0, true, true));
+				player.removePotionEffect(SomniaPotions.exhaustedEffect);
+				player.removePotionEffect(SomniaPotions.fadingEffect);
 			}
 		}
 	}
@@ -192,7 +207,7 @@ public class ForgeEventHandler
 		EntityPlayer player = event.getEntityPlayer();
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
-			if (props.shouldSleepNormally() && player.sleepTimer == 100 && player.world.getTotalWorldTime() % 24000 < 7000) {
+			if (props.shouldSleepNormally() && player.sleepTimer == 100 && player.world.getWorldTime() % 24000 < 7000) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
 			props.maxFatigueCounter();
@@ -213,13 +228,21 @@ public class ForgeEventHandler
 		EntityPlayer player = event.getEntityPlayer();
 		BlockPos pos = event.getPos();
 		final IBlockState state = player.world.isBlockLoaded(pos) ? player.world.getBlockState(pos) : null;
-		final boolean isBed = state != null && state.getBlock().isBed(state, player.world, pos, player);
-		final EnumFacing enumfacing = isBed && state.getBlock() instanceof BlockHorizontal ? state.getValue(BlockHorizontal.FACING) : null;
+        final boolean isBed = state != null && state.getBlock().isBed(state, player.world, pos, player);
+		final EnumFacing enumfacing = isBed && state.getBlock() instanceof BlockHorizontal ? (EnumFacing)state.getValue(BlockHorizontal.FACING) : null;
 		final boolean sleepCharm = Loader.isModLoaded("darkutils") && InvUtil.hasItem(player, CompatModule.CHARM_SLEEP);
-		final boolean sleepNormally = player.isSneaking();
-
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		
 		if (!player.world.isRemote)
 		{
+			// prevents sleep normally staying true if the sleep result is not OK nor NOT_POSSIBLE_NOW
+			boolean shouldSleepNormally = false;
+			if (props != null)
+			{
+				shouldSleepNormally = props.shouldSleepNormally();
+				props.setSleepNormally(false);
+			}
+			
 			if (player.isPlayerSleeping() || !player.isEntityAlive())
 			{
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
@@ -232,13 +255,13 @@ public class ForgeEventHandler
 				return;
 			}
 
-			if (sleepNormally || sleepCharm) {
+			if (shouldSleepNormally || sleepCharm) {
 				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 					return;
 				}
 			}
-			else if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) {
+			else if (!Somnia.enterSleepPeriod.isTimeWithin(player.world.getWorldTime() % 24000)) {
 				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 				return;
 			}
@@ -248,7 +271,7 @@ public class ForgeEventHandler
 				event.setResult(EntityPlayer.SleepResult.TOO_FAR_AWAY);
 			}
 
-			if (!SomniaUtil.checkFatigue(player)) {
+			if (SomniaConfig.FATIGUE.enableFatigueSystem && !SomniaUtil.checkFatigue(player)) {
 				player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
 				return;
@@ -269,14 +292,34 @@ public class ForgeEventHandler
 				event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
 				return;
 			}
+			
+			if (props != null)
+			{
+				double fatigue = props.getFatigue();
+				if (fatigue >= SomniaConfig.FATIGUE.fatigueFading 
+						&& SomniaConfig.FATIGUE.fatigueFading >= 0)
+				{
+					SomniaPotions.fadingEffect.removeHarmfulPotionEffects(player);
+				}
+				else if (fatigue >= SomniaConfig.FATIGUE.fatigueExhausted 
+						&& SomniaConfig.FATIGUE.fatigueExhausted >= 0)
+				{
+					SomniaPotions.exhaustedEffect.removeHarmfulPotionEffects(player);
+				}
+				else if (fatigue >= SomniaConfig.FATIGUE.fatigueSleepy)
+				{
+					SomniaPotions.sleepyEffect.removeHarmfulPotionEffects(player);
+				}
+				
+				props.setSleepNormally(shouldSleepNormally);
+			}
 		}
 
-		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 		if (props != null) {
 			if (sleepCharm) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
-			else if (sleepNormally || !CompatModule.checkBed(player, pos)) {
+			else if (!CompatModule.checkBed(player, pos)) {
 				props.setSleepNormally(true);
 			}
 		}
@@ -289,16 +332,16 @@ public class ForgeEventHandler
 		player.spawnShoulderEntities();
 		player.setSize(0.2F, 0.2F);
 
-		if (enumfacing != null) {
-			float f1 = 0.5F + (float)enumfacing.getXOffset() * 0.4F;
-			float f = 0.5F + (float)enumfacing.getZOffset() * 0.4F;
-			player.setRenderOffsetForSleep(enumfacing);
-			player.setPosition(((float)pos.getX() + f1), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + f));
-		}
-		else
-		{
-			player.setPosition(((float)pos.getX() + 0.5F), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + 0.5F));
-		}
+        if (enumfacing != null) {
+            float f1 = 0.5F + (float)enumfacing.getXOffset() * 0.4F;
+            float f = 0.5F + (float)enumfacing.getZOffset() * 0.4F;
+            player.setRenderOffsetForSleep(enumfacing);
+            player.setPosition((double)((float)pos.getX() + f1), (double)((float)pos.getY() + 0.6875F), (double)((float)pos.getZ() + f));
+        }
+        else
+        {
+        	player.setPosition((double)((float)pos.getX() + 0.5F), (double)((float)pos.getY() + 0.6875F), (double)((float)pos.getZ() + 0.5F));
+        }
 
 		player.sleeping = true;
 		player.sleepTimer = 0;
@@ -315,6 +358,19 @@ public class ForgeEventHandler
 		Somnia.proxy.updateWakeTime(player);
 
 		event.setResult(EntityPlayer.SleepResult.OK);
+	}
+	
+	@SubscribeEvent
+	public void onSleepTimeCheck(SleepingTimeCheckEvent event)
+	{
+		EntityPlayer player = event.getEntityPlayer();
+		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
+		if (props != null && props.shouldSleepNormally()) {
+			event.setResult(Result.ALLOW);
+		}
+		else {
+			event.setResult(Result.DEFAULT);
+		}
 	}
 
 	@SubscribeEvent
@@ -358,20 +414,16 @@ public class ForgeEventHandler
 		EntityPlayer player = event.getEntityPlayer();
 
 		if ((event instanceof PlayerInteractEvent.RightClickBlock && CompatModule.checkBed(player, pos)) || (event instanceof PlayerInteractEvent.EntityInteractSpecific && RailcraftPlugin.isBedCart(((PlayerInteractEvent.EntityInteractSpecific)event).getTarget()))) {
-			if (player.bedInRange(pos, null)) //the facing can be null
+			if (player.bedInRange(pos, null) && player.isSneaking()) //the facing can be null
 			{
-				ItemStack currentItem = player.inventory.getCurrentItem();
-				ResourceLocation registryName = currentItem.getItem().getRegistryName();
-				if (!currentItem.isEmpty() && registryName != null && registryName.toString().equals(SomniaConfig.OPTIONS.wakeTimeSelectItem)) {
-					if (world.isRemote) {
-						Minecraft minecraft = Minecraft.getMinecraft();
-						if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
-					}
-					else Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
-
-					event.setCancellationResult(EnumActionResult.SUCCESS);
-					event.setCanceled(true);
+				if (world.isRemote) {
+					Minecraft minecraft = Minecraft.getMinecraft();
+					if (minecraft.currentScreen instanceof GuiSelectWakeTime) return;
 				}
+				else Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
+
+				event.setCancellationResult(EnumActionResult.SUCCESS);
+				event.setCanceled(true);
 			}
 		}
 	}
