@@ -28,7 +28,7 @@ repositories {
 dependencies {
 	minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2860"
 
-    implementation fg.deobf("curse.maven:railcraft-51195:2687757")
+    compileOnly fg.deobf("curse.maven:railcraft-51195:2687757")
 	implementation fg.deobf("curse.maven:baubles-227083:2518667")
 	
 	implementation ("net.minecraftforge:mergetool:0.2.3.3") { force = true }

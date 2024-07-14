@@ -49,7 +49,7 @@ public class FatigueEffect extends Potion {
     		int _amplifier = 0;
     		if (i < extraPotionsAmplifiers.length) 
     			_amplifier = extraPotionsAmplifiers[i];
-    		player.addPotionEffect(new PotionEffect(extraPotions.get(i), 419, _amplifier, false, true));
+    		player.addPotionEffect(new PotionEffect(extraPotions.get(i), 310, _amplifier, false, true));
     	}
     }
     

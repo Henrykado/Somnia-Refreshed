@@ -4,18 +4,20 @@ somnia.status.expired=Você não pode dormir para sempre
 somnia.status.not_now=Algo está te mantendo acordado
 somnia.status.waiting=Esperando pelo servidor
 somnia.status.waiting_players=Esperando para os outros jogadores dormirem
+somnia.status.cant_sleep_at_night=Você só pode dormir durante o dia
+somnia.status.cant_sleep_now=Você não pode dormir ainda
 
 somnia.effect.awakening=Vigília
-potion.effect.awakening=Poção de Vigília
-splash_potion.effect.awakening=Poção Arremessável de Vigília
-tipped_arrow.effect.awakening=Flecha de Vigília
-lingering_potion.effect.awakening=Poção Prolongada de Vigília
+potion.effect.awakening=Poção de vigília
+splash_potion.effect.awakening=Poção arremessável de vigília
+tipped_arrow.effect.awakening=Flecha de vigília
+lingering_potion.effect.awakening=Poção prolongada de vigília
 
 somnia.effect.insomnia=Insônia
-potion.effect.insomnia=Poção de Insônia
-splash_potion.effect.insomnia=Poção Arremessável de Insônia
-tipped_arrow.effect.insomnia=Flecha de Insônia
-lingering_potion.effect.insomnia=Poção Prolongada de Insônia
+potion.effect.insomnia=Poção de insônia
+splash_potion.effect.insomnia=Poção arremessável de insônia
+tipped_arrow.effect.insomnia=Flecha de insônia
+lingering_potion.effect.insomnia=Poção prolongada de insônia
 
 somnia.effect.sleepy=Sonolência
 somnia.effect.exhausted=Exaustão

@@ -7,8 +7,6 @@ import com.kingrunes.somnia.api.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.api.capability.IFatigue;
 import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.PacketHandler;
-import com.kingrunes.somnia.common.PlayerSleepTickHandler;
-import com.kingrunes.somnia.common.PlayerSleepTickHandler.State;
 import com.kingrunes.somnia.common.SomniaConfig;
 import com.kingrunes.somnia.common.SomniaPotions;
 import com.kingrunes.somnia.common.compat.CompatModule;
@@ -66,7 +64,6 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 public class ForgeEventHandler
 {
@@ -256,13 +253,28 @@ public class ForgeEventHandler
 			}
 
 			if (shouldSleepNormally || sleepCharm) {
+				if (props != null) props.setSleepNormally(shouldSleepNormally);
 				if(!ForgeEventFactory.fireSleepingTimeCheck(player, pos)) {
+					if (props != null) props.setSleepNormally(false);
 					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
 					return;
 				}
 			}
-			else if (!Somnia.enterSleepPeriod.isTimeWithin(player.world.getWorldTime() % 24000)) {
-				event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
+			else if (!Somnia.enterSleepPeriod.isTimeWithin(player.world.getWorldTime() % 24000) 
+					|| !Somnia.validSleepPeriod.isTimeWithin(player.world.getWorldTime() % 24000)) {
+				long start = Math.max(Somnia.enterSleepPeriod.start, Somnia.validSleepPeriod.start);
+				long end = Math.min(Somnia.enterSleepPeriod.end, Somnia.validSleepPeriod.end);
+				
+				if (start == 12000 && end == 24000) {
+					event.setResult(EntityPlayer.SleepResult.NOT_POSSIBLE_NOW);
+				} 
+				else {
+					if (start == 0 && end == 12000) 
+						player.sendStatusMessage(new TextComponentTranslation("somnia.status.cant_sleep_at_night"), true);
+					else
+						player.sendStatusMessage(new TextComponentTranslation("somnia.status.cant_sleep_now"), true);
+					event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+				}
 				return;
 			}
 
@@ -292,8 +304,17 @@ public class ForgeEventHandler
 				event.setResult(EntityPlayer.SleepResult.NOT_SAFE);
 				return;
 			}
+		}
+
+		if (props != null) {
+			if (sleepCharm) {
+				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
+			}
+			else if (!CompatModule.checkBed(player, pos)) {
+				props.setSleepNormally(true);
+			}
 			
-			if (props != null)
+			if (!player.world.isRemote)
 			{
 				double fatigue = props.getFatigue();
 				if (fatigue >= SomniaConfig.FATIGUE.fatigueFading 
@@ -310,17 +331,6 @@ public class ForgeEventHandler
 				{
 					SomniaPotions.sleepyEffect.removeHarmfulPotionEffects(player);
 				}
-				
-				props.setSleepNormally(shouldSleepNormally);
-			}
-		}
-
-		if (props != null) {
-			if (sleepCharm) {
-				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
-			}
-			else if (!CompatModule.checkBed(player, pos)) {
-				props.setSleepNormally(true);
 			}
 		}
 
@@ -365,7 +375,7 @@ public class ForgeEventHandler
 	{
 		EntityPlayer player = event.getEntityPlayer();
 		IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-		if (props != null && props.shouldSleepNormally()) {
+		if (props != null && !props.shouldSleepNormally()) {
 			event.setResult(Result.ALLOW);
 		}
 		else {

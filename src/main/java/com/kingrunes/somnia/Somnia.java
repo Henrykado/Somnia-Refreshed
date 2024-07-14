@@ -48,8 +48,8 @@ public class Somnia
 	public static IProxy proxy;
 	public static Logger logger;
 	public static FMLEventChannel eventChannel;
-	public static TimePeriod enterSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.enterSleepStart, SomniaConfig.TIMINGS.enterSleepEnd);
-	public static TimePeriod validSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.validSleepStart, SomniaConfig.TIMINGS.validSleepEnd);
+	public static TimePeriod enterSleepPeriod;
+	public static TimePeriod validSleepPeriod;
 	public static ForgeEventHandler forgeEventHandler;
 
 	@SuppressWarnings("incomplete-switch")
@@ -59,11 +59,7 @@ public class Somnia
 		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
 		
-		switch (SomniaConfig.TIMINGS._enterSleepPreset)
-		{
-			case NIGHT: enterSleepPeriod = new TimePeriod(12000, 24000); break;
-			case DAY: enterSleepPeriod = new TimePeriod(24000, 12000); break;
-		}
+		setSleepPeriods();
 
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
@@ -98,5 +94,16 @@ public class Somnia
 	public void onServerStarting(FMLServerStartingEvent event)
 	{
 		event.registerServerCommand(new SomniaCommand());
+	}
+	
+	public static void setSleepPeriods()
+	{
+		switch (SomniaConfig.TIMINGS._enterSleepPreset)
+		{
+			case NIGHT: enterSleepPeriod = new TimePeriod(12000, 24000); break;
+			case DAY: enterSleepPeriod = new TimePeriod(24000, 12000); break;
+			case CUSTOM: enterSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.enterSleepStart, SomniaConfig.TIMINGS.enterSleepEnd);
+		}
+		validSleepPeriod = new TimePeriod(SomniaConfig.TIMINGS.validSleepStart, SomniaConfig.TIMINGS.validSleepEnd);
 	}
 }

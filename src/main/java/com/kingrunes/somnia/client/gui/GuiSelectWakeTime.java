@@ -20,6 +20,12 @@ public class GuiSelectWakeTime extends GuiScreen
 {
 	private boolean resetSpawn = true;
 	private boolean sleepNormally = false;
+	private boolean isHoldingClock = false;
+	
+	public GuiSelectWakeTime(boolean isHoldingClock)
+	{
+		this.isHoldingClock = isHoldingClock;
+	}
 
 	@Override
 	public void initGui()
@@ -31,24 +37,24 @@ public class GuiSelectWakeTime extends GuiScreen
 
 		buttonList.add(new GuiButton(i++, buttonCenterX, buttonCenterY - 22, buttonWidth, buttonHeight, "Reset spawn: "+(this.resetSpawn ? "Yes" : "No")));
 		buttonList.add(new GuiButton(i++, buttonCenterX, buttonCenterY + 22, buttonWidth, buttonHeight, "Cancel"));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX, buttonCenterY + 88, buttonWidth, buttonHeight, "Midnight", 18000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 80, buttonCenterY + 66, buttonWidth, buttonHeight, "After Midnight", 20000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 110, buttonCenterY + 44, buttonWidth, buttonHeight, "Before Sunrise", 22000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunrise", 23000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 140, buttonCenterY, buttonWidth, buttonHeight, "After Sunrise", 0));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Early Morning", 1500));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Morning", 3000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Late Morning", 4500));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX, buttonCenterY - 88, buttonWidth, buttonHeight, "Noon", 6000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Early Afternoon", 7500));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Afternoon", 9000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Late Afternoon", 10500));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 140, buttonCenterY, buttonWidth, buttonHeight, "Before Sunset", 12000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunset", 13000));
-		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 100, buttonCenterY + 44, buttonWidth, buttonHeight, "After Sunset", 14000));
-		buttonList.add(new GuiButtonHover(i, buttonCenterX + 88, buttonCenterY + 66, buttonWidth, buttonHeight, "Before Midnight", 16000));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX, buttonCenterY + 88, buttonWidth, buttonHeight, "Midnight", 18000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 80, buttonCenterY + 66, buttonWidth, buttonHeight, "After Midnight", 20000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 110, buttonCenterY + 44, buttonWidth, buttonHeight, "Before Sunrise", 22000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunrise", 23000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 140, buttonCenterY, buttonWidth, buttonHeight, "After Sunrise", 0, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Early Morning", 1500, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Morning", 3000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX - 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Late Morning", 4500, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX, buttonCenterY - 88, buttonWidth, buttonHeight, "Noon", 6000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Early Afternoon", 7500, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Afternoon", 9000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Late Afternoon", 10500, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 140, buttonCenterY, buttonWidth, buttonHeight, "Before Sunset", 12000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunset", 13000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i++, buttonCenterX + 100, buttonCenterY + 44, buttonWidth, buttonHeight, "After Sunset", 14000, isHoldingClock));
+		buttonList.add(new GuiButtonHover(i, buttonCenterX + 88, buttonCenterY + 66, buttonWidth, buttonHeight, "Before Midnight", 16000, isHoldingClock));
 		if (SomniaConfig.OPTIONS.enableSleepNormallyButton)
-			buttonList.add(new GuiButton(i++, buttonCenterX + 5, buttonCenterY - 44, 90, buttonHeight, "Sleep Normally"));
+			buttonList.add(new GuiButton(i++, buttonCenterX + 5, buttonCenterY + 44, 90, buttonHeight, "Sleep Normally"));
 	}
 
 	@Override
@@ -56,8 +62,8 @@ public class GuiSelectWakeTime extends GuiScreen
 		this.drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		drawCenteredString(this.fontRenderer, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
-		if (SomniaConfig.OPTIONS.enableClockAndButtonHoverText)
-			drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 + 41, 16777215);
+		if (isHoldingClock)
+			drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 - 48, 16777215);
 	}
 
 	@Override

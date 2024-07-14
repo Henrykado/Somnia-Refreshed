@@ -4,14 +4,11 @@ import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.api.SomniaAPI;
 import com.kingrunes.somnia.common.compat.CompatModule;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Ignore;
-import net.minecraftforge.common.config.Config.RequiresMcRestart;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -190,9 +187,6 @@ public class SomniaConfig {
         @Config.Comment("Adds a Sleep Normally button to the wake time select menu")
         public boolean enableSleepNormallyButton = false;
         
-        @Config.Comment("Enables hover text for the buttons, showing the time that they represent, and shows the current time in the wake time select menu")
-        public boolean enableClockAndButtonHoverText = false;
-        
         @Config.RequiresWorldRestart
         @Config.Comment("Disables the Awakening and Imsonmnia potions added by the mod, reccomended if you disabled the fatigue system")
         public boolean disablePotions = false;
@@ -216,7 +210,6 @@ public class SomniaConfig {
     }
 
     public static class Timings {
-    	@RequiresMcRestart
     	@Config.Comment("Specifies the period in which the player can sleep\n"
     			+ "NIGHT - sets start to 12000, and end to 24000\n"
     			+ "DAY - sets start to 0, and end to 12000\n"
@@ -238,6 +231,7 @@ public class SomniaConfig {
     public static void onConfigChanged(final ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(Somnia.MOD_ID)) {
             ConfigManager.sync(Somnia.MOD_ID, Config.Type.INSTANCE);
+            Somnia.setSleepPeriods();
         }
     }
 

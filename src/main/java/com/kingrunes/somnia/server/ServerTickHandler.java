@@ -104,7 +104,7 @@ public class ServerTickHandler
 				{
 					ep.wakeUpPlayer(false, true, true); // Stop clients ignoring GUI close packets (major hax)
 				}
-				if (key != null && key != "NOT_NOW") 
+				if (key != null)
 					ep.sendMessage(new TextComponentTranslation(String.format(TRANSLATION_FORMAT, key.toLowerCase())));
 			}
 		}

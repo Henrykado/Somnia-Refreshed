@@ -22,21 +22,14 @@ public class PlayerSleepTickHandler
 	/*
 	 * A sided state for caching player data 
 	 */
-	public static class State
-	{
-		public boolean sleepOverride = false;
-	}
-	
-	public static State clientState = new State(), serverState = new State();
 	
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
-		State state = event.side == Side.CLIENT ? clientState : serverState;
-		if (event.phase == Phase.START) tickStart(state, event.player);
+		if (event.phase == Phase.START) tickStart(event.player);
 	}
 
-	public void tickStart(State state, EntityPlayer player)
+	public void tickStart(EntityPlayer player)
 	{
 		if (player.isPlayerSleeping())
 		{			

@@ -15,6 +15,8 @@ somnia.status.expired=You can't sleep forever
 somnia.status.not_now=Something is keeping you awake
 somnia.status.waiting=Waiting for server
 somnia.status.waiting_players=Waiting for other players to sleep
+somnia.status.cant_sleep_at_night=You can only sleep during the day
+somnia.status.cant_sleep_now=You can't sleep yet
 
 somnia.effect.awakening=Wakefulness
 potion.effect.awakening=Wakefulness Potion

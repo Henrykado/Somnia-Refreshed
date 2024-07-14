@@ -8,6 +8,7 @@ import com.kingrunes.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -33,7 +34,7 @@ public class ClientProxy implements IProxy
 	public void handleGUIOpenPacket() {
 		final Minecraft mc = Minecraft.getMinecraft();
 		if (SomniaConfig.OPTIONS.enableWakeTimeSelectMenu)
-			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSelectWakeTime()));
+			mc.addScheduledTask(() -> mc.displayGuiScreen(new GuiSelectWakeTime(mc.player.inventory.getCurrentItem().getItem() == Items.CLOCK)));
 	}
 
 	@Override

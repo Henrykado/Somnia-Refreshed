@@ -145,7 +145,7 @@ public class SomniaUtil {
     public static boolean isPlayerFullyAsleep(EntityPlayer player)
     {
     	IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
-    	if (props != null && props.shouldSleepNormally()) 
+    	if (props != null && !props.shouldSleepNormally()) 
     		return false;
     	
     	return player.sleeping && player.sleepTimer >= 100;
