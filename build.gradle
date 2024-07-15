@@ -1,16 +1,21 @@
 buildscript {
     repositories {
-        mavenCentral()
+    	mavenCentral()
+    	gradlePluginPortal()
         maven { url = "https://files.minecraftforge.net/maven" }
     }
 	
     dependencies {
         classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "5.1.+"
+        classpath group: "gradle.plugin.com.matthewprenger", name: "CurseGradle", version: "1.4.0"
+        classpath group: "com.modrinth.minotaur", name: "com.modrinth.minotaur.gradle.plugin", version: "2.+"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'com.matthewprenger.cursegradle'
+apply plugin: 'com.modrinth.minotaur'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 compileJava {
@@ -87,6 +92,35 @@ processResources {
     filesMatching("mcmod.info") {
 		expand "version": project.version
 	}
+}
+
+curseforge {
+    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN") as String ?: "DUMMY"
+    project {
+        id = "1062151"
+        //changelogType = "markdown"
+        changelog = ""
+        releaseType = "release"
+        mainArtifact(tasks.getByName("jar"), {
+            relations {
+                optionalDependency("openblocks")
+                optionalDependency("cyclic")
+                optionalDependency("dark-utilities")
+                optionalDependency("railcraft")
+            }
+        })
+        addGameVersion("Forge")
+        addGameVersion("1.12.2")
+    }
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String ?: "DUMMY"
+    projectId = "xUSE1CmZ"
+    versionNumber = project.version
+    uploadFile = tasks.getByName("jar")
+    gameVersions = ["1.12.2"] 
+	loaders = ["forge"]
 }
 
 //When Forge 1.12 loads mods from a directory that's been put on the classpath, it expects to find resources in the same directory.
