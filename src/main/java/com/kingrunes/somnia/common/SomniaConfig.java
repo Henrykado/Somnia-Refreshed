@@ -193,6 +193,10 @@ public class SomniaConfig {
         
         @Config.Comment("Enables a special sleep menu, accessible by trying to sleep on a bed while sneaking, that lets you choose when exactly you want to wake up")
         public boolean enableWakeTimeSelectMenu = true;
+		
+		@Config.Comment("Enables needing to hold a clock to show a digital clock and exact timings when hovering the buttons to the wake time selection menu\n"
+			+ "Disable to always extend the menu")
+        public boolean clockExtendsWakeTimeSelectMenu = true;
     }
 
     public static class Performance {

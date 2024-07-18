@@ -62,7 +62,7 @@ public class GuiSelectWakeTime extends GuiScreen
 		this.drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
 		drawCenteredString(this.fontRenderer, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
-		if (isHoldingClock)
+		if (isHoldingClock || !SomniaConfig.OPTIONS.clockExtendsWakeTimeSelectMenu)
 			drawCenteredString(this.fontRenderer, SomniaUtil.timeStringForWorldTime(this.mc.player.world.getWorldTime()), this.width/2, this.height/2 - 48, 16777215);
 	}
 

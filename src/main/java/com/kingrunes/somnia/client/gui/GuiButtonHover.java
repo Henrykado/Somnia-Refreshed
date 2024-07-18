@@ -28,7 +28,7 @@ public class GuiButtonHover extends GuiButton {
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         super.drawButton(mc, mouseX, mouseY, partialTicks);
-        if (isHoldingClock)
+        if (isHoldingClock || !SomniaConfig.OPTIONS.clockExtendsWakeTimeSelectMenu)
         	this.displayString = this.hoverText != null && this.hovered ? this.hoverText : this.buttonText;
     }
 
